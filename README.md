@@ -13,7 +13,7 @@
 
 # django-tof
 Django models translation on fly 🛸️
-
+THIS FORK IS THE NEXT VERSION OF DJANGO_TOF
 ----
 This project was initiated, promoted and accompanied by winePad GmbH. All development based on ideas, experience and financing by winePad GmbH (winePad.at).
 
