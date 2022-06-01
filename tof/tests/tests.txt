@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-# @Author: MaxST
-# @Date:   2019-11-15 19:17:59
-# @Last Modified by:   MaxST
-# @Last Modified time: 2019-12-15 14:23:41
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.options import IS_POPUP_VAR
@@ -18,7 +14,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.urls import reverse
 from django.utils.translation import activate, override
-from main.models import Vintage, Wine, Winery
+# from main.models import Vintage, Wine, Winery
 from mixer.backend.django import mixer
 from tof.admin import (
     ContentTypeAdmin, LanguageAdmin, TranslatableFieldAdmin, TranslationAdmin,

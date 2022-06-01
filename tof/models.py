@@ -1,84 +1,74 @@
 # -*- coding: utf-8 -*-
-# @Author: MaxST
-# @Date:   2019-10-23 17:24:33
-# @Last Modified by:   MaxST
-# @Last Modified time: 2019-12-02 18:08:48
 
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey, GenericRelation,
-)
+from django.db import models, transaction
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
-from django.db.models import Q
-from django.utils.functional import cached_property
-from django.utils.translation import gettext_lazy as _
+from django.db.models import Q, QuerySet
+from django.utils.safestring import mark_safe
+from django.utils.translation.trans_real import DjangoTranslation
 
-from .managers import TranslationManager
-from .settings import CHANGE_DEFAULT_MANAGER
 from .utils import TranslatableText
+from . import default_translator as _
+from .mixins import apply_mixins
+
+
+class TranslationQueryset(QuerySet):
+
+    @transaction.atomic
+    def save_translations(self, instance):
+        vars(instance).pop('get_from_db', None)
+        to_update = [*instance.collect('updated')]
+        self.bulk_update((obj for obj in to_update if obj.value), ['value'])
+        self.bulk_delete((obj.pk for obj in to_update if not obj.value))
+        self.bulk_create(instance.collect('created'))
+
+    def bulk_delete(self, objs):
+        return self.filter(pk__in=[*objs]).delete()
 
 
 class Translation(models.Model):
+
     class Meta:
         verbose_name = _('Translation')
         verbose_name_plural = _('Translation')
-        unique_together = ('content_type', 'object_id', 'field', 'lang')
+        unique_together = ('object_id', 'field', 'lang')
 
-    content_type = models.ForeignKey(
-        ContentType,
-        limit_choices_to=~Q(app_label='tof'),
-        on_delete=models.CASCADE,
-        related_name='translations',
-    )
+    content_type = models.ForeignKey(ContentType, limit_choices_to=~Q(app_label='tof'), on_delete=models.DO_NOTHING, related_name='translations',)
     object_id = models.PositiveIntegerField(help_text=_('First set the field'))
     content_object = GenericForeignKey()
 
-    field = models.ForeignKey('TranslatableField', related_name='translations', on_delete=models.CASCADE)
-    lang = models.ForeignKey(
-        'Language',
-        related_name='translations',
-        limit_choices_to=Q(is_active=True),
-        on_delete=models.CASCADE,
-    )
-
+    field = models.ForeignKey('TranslatableField', related_name='translations', on_delete=models.DO_NOTHING)
+    lang = models.ForeignKey('Language', related_name='translations', limit_choices_to=Q(is_active=True), on_delete=models.DO_NOTHING)
     value = models.TextField(_('Value'), help_text=_('Value field'))
 
+    objects = TranslationQueryset.as_manager()
+
     def __str__(self):
-        return f'{self.content_object}.{self.field.name}.{self.lang} = "{self.value}"'
+        return f'{self.value or ""}'
+
+    def __repr__(self):
+        return f'{self.content_object}.{self.field.name}.{self.lang} = "{self}"'
+
+    def update(self, lang, value):
+        self.value = value[lang]
+        return self
+
+    @classmethod
+    def create(cls, field, instance, lang, value):
+        return cls(field=field, content_object=instance, lang_id=lang, value=value)
 
 
-class TranslationFieldMixin(models.Model):
-    class Meta:
-        abstract = True
+class TranslatableFieldQuerySet(QuerySet):
 
-    _translations = GenericRelation(Translation, verbose_name=_('Translation'))
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._end_init = True
-
-    @cached_property
-    def _all_translations(self):
-        attrs, names_mapper = vars(self), self._meta._field_tof['by_id']
-        for trans in self._translations.all():
-            name = names_mapper[trans.field_id].name
-            attrs[name] = trans_obj = attrs.get(name) or TranslatableText()
-            vars(trans_obj)[trans.lang_id] = trans.value
-        return attrs
-
-    def get_translation(self, name):
-        attrs = vars(self)
-        if '_end_init' in attrs:
-            attrs = self._all_translations
-        return attrs.get(name) or TranslatableText()
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        for translated_field in self._meta._field_tof['by_id'].values():
-            translated_field.save_translation(self)
+    def patch_fields(self):
+        for field in self.all():
+            field.patch_unpatch('patch')
 
 
 class TranslatableField(models.Model):
+    replaced_field = None
+    translator_cls = TranslatableText
+
     class Meta:
         verbose_name = _('Translatable field')
         verbose_name_plural = _('Translatable fields')
@@ -86,89 +76,85 @@ class TranslatableField(models.Model):
         unique_together = ('content_type', 'name')
 
     name = models.CharField(_('Field name'), max_length=250, help_text=_('Name field'))
-    title = models.CharField(_('User field name'), max_length=250, help_text=_("Name user's field"))
-    content_type = models.ForeignKey(
-        ContentType,
-        limit_choices_to=~Q(app_label='tof'),
-        on_delete=models.CASCADE,
-        related_name='translatablefields',
-    )
+    content_type = models.ForeignKey(ContentType, limit_choices_to=~Q(app_label='tof'), on_delete=models.CASCADE, related_name='translatablefields')
+    objects = TranslatableFieldQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.content_type.model}|{self.title}'
+        return f'{self.content_type.model}|{self.name}'
+
+    def pre_save(self, instance, *__):
+        value = vars(instance).get(self.name)
+        return getattr(value, '_origin', None) or value
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.add_translation_to_class()
+        self.patch_unpatch('patch')
 
     def delete(self, *args, **kwargs):
-        self.remove_translation_from_class()
+        self.patch_unpatch('unpatch')
         super().delete(*args, **kwargs)
 
+    def is_translatable(self, value):
+        return isinstance(value, self.translator_cls)
+
+    def get_saved(self, instance):
+        return instance.get_from_db().get(self.pk) or {}
+
+    def collect(self, instance, action):
+        value = vars(instance).get(self.name)
+        if self.is_translatable(value):
+            yield from getattr(self, f'collect_{action}')(self.get_saved(instance), value, instance)
+
+    @staticmethod
+    def collect_updated(saved, value, *__):
+        yield from (translation.update(lang, value) for lang, translation in saved.items() if translation.value != value[lang])
+
+    def collect_created(self, saved, value, instance):
+        model = getattr(self, 'translations').model
+        yield from (model.create(self, instance, lang, value) for lang, value in value.iter if not saved.get(lang))
+
     def __get__(self, instance, instance_cls):
-        return instance.get_translation(self.name) if instance else vars(instance_cls).get(self.name)
+        if instance:
+            value = vars(instance).get(self.name)
+            if hasattr(instance, '_end_init') and not self.is_translatable(value):
+                value = self.translator_cls().update(_origin=value, **self.get_saved(instance))
+            return value
+        return vars(instance_cls).get(self.name)
 
     def __set__(self, instance, value):
-        attrs = vars(instance)
-        if isinstance(value, TranslatableText):
-            attrs[self.name] = value
-        else:
-            translation = attrs[self.name] = instance.get_translation(self.name)
-            vars(translation)[translation.get_lang() if '_end_init' in attrs else '_origin'] = str(value)
+        if hasattr(instance, '_end_init') and not self.is_translatable(value):
+            value = getattr(instance, self.name).update_current(value)
+        vars(instance)[self.name] = value
 
     def __delete__(self, instance):
-        vars(self).pop(self.name, None)
-        instance._meta._field_tof['by_name'].pop(instance._meta._field_tof['by_id'].pop(self.id, self).name, None)
+        vars(instance).pop(self.name, None)
 
-    def save_translation(self, instance):
-        val = instance.get_translation(self.name)
-        if val:
-            for lang, value in vars(val).items():
-                if lang != '_origin':
-                    translation, _ = instance._translations.get_or_create(field=self, lang_id=lang)
-                    translation.value = value
-                    translation.save()
+    def patch_unpatch(self, patch):
+        target_cls = getattr(self.content_type, 'model_class')()
+        if target_cls:
+            if not hasattr(target_cls, 'translations'):
+                GenericRelation('tof.Translation', verbose_name=_('Translation')).contribute_to_class(target_cls, 'translations')
+                target_cls.translations.fields = {}
+            getattr(self, f'{patch}_field')(target_cls, target_cls.translations.fields)
+            apply_mixins(patch, target_cls, target_cls.translations.fields)
 
-    def add_translation_to_class(self, trans_mng=None):
-        cls = self.content_type.model_class()
-        if not hasattr(cls._meta, '_field_tof'):
-            cls.__bases__ = (TranslationFieldMixin, ) + cls.__bases__
-            cls._meta._field_tof = {'by_name': {}, 'by_id': {}}
-            if CHANGE_DEFAULT_MANAGER and not isinstance(cls._default_manager, TranslationManager):
-                origin = cls.objects
-                new_mng_cls = type(f'TranslationManager{cls.__name__}', (TranslationManager, type(origin)), {})
-                trans_mng = trans_mng or new_mng_cls()
-                trans_mng.contribute_to_class(cls, trans_mng.default_name)
-                cls._meta.default_manager_name = trans_mng.default_name
-                # FIXME
-                del cls.objects
-                trans_mng.contribute_to_class(cls, 'objects')
-                origin.contribute_to_class(cls, 'objects_origin')
-        setattr(
-            cls,
-            cls._meta._field_tof['by_name'].setdefault(cls._meta._field_tof['by_id'].setdefault(self.id, self).name, self).name,
-            self,
-        )
+    def patch_field(self, target_cls, fields):
+        if getattr(target_cls, self.name, None):
+            self.replaced_field = getattr(target_cls, self.name, None)
+            setattr(self.replaced_field.field, 'pre_save', lambda *args, **kwargs: self.pre_save(*args, *kwargs))
+            setattr(target_cls, self.name, self)
+            fields[self.pk] = self.name
 
-    def remove_translation_from_class(self):
-        cls = self.content_type.model_class()
-        cls._meta._field_tof['by_name'].pop(cls._meta._field_tof['by_id'].pop(self.id, self).name, None)
-        delattr(cls, self.name)
-        field = cls._meta.get_field(self.name)
-        field.contribute_to_class(cls, self.name)
-        if not cls._meta._field_tof['by_id']:
-            del cls._meta._field_tof
-            cls.__bases__ = tuple(base for base in cls.__bases__ if base != TranslationFieldMixin)  # important!
-            if CHANGE_DEFAULT_MANAGER and isinstance(cls._default_manager, TranslationManager):
-                delattr(cls, cls._default_manager.default_name)
-                cls._meta.default_manager_name = None
-                mng = cls.objects_origin
-                del cls.objects
-                del cls.objects_origin
-                mng.contribute_to_class(cls, 'objects')
+    def unpatch_field(self, target_cls, fields):
+        if getattr(target_cls, self.name, None):
+            field = getattr(target_cls, self.name, None)
+            delattr(field.replaced_field.field, 'pre_save')
+            setattr(target_cls, self.name, field.replaced_field)
+            fields.pop(self.pk, None)
 
 
 class Language(models.Model):
+
     class Meta:
         verbose_name = _('Language')
         verbose_name_plural = _('Languages')
@@ -178,4 +164,59 @@ class Language(models.Model):
     is_active = models.BooleanField(_(u'Active'), default=True)
 
     def __str__(self):
-        return self.iso
+        return f'{self.iso or str()}'
+
+
+class StaticMessageTranslation(models.Model):
+    CACHE = {}
+    base_translator_cls = DjangoTranslation.gettext
+
+    class Meta:
+        verbose_name = _('Static translation')
+        verbose_name_plural = _('Static translations')
+        indexes = [models.Index(fields=['message'])]
+
+    message = models.CharField(_('Message'), max_length=1000)
+    translation = models.CharField(_('Translation'), max_length=1000)
+
+    objects = QuerySet.as_manager()
+
+    def __str__(self):
+        return f'{self.translation or self.message or str()}'
+
+    def languages(self):
+        iterator = getattr(self.translation, 'iter', ())
+        return ', '.join((lang for lang, __ in iterator)) if iterator else ''
+    languages.admin_order_field = 'translations'
+
+    @staticmethod
+    def gettext(translator, message):
+        cls = StaticMessageTranslation
+        if message not in cls.CACHE:
+            try:
+                messages = cls.objects.filter(message=message)[:2]
+                cls.CACHE[message] = messages[0] if len(messages) else cls.objects.create(message=message)
+                if len(messages) > 1:
+                    cls.objects.exclude(pk=cls.CACHE[message].pk).delete(message=message)
+            except Exception as error:
+                print(message, repr(error), error, getattr(error, 'args', None), error.__context__, error.__cause__,)
+                return str(message)
+        cached = cls.CACHE[message]
+        if not cached.translation.current:
+            translation = cls.base_translator_cls(translator, message)
+            if translation not in vars(cached.translation).values():
+                cached.translation = translation
+                cached.save()
+        return mark_safe(cached.translation)
+
+    @classmethod
+    def patch_djangotranslation(cls):
+        DjangoTranslation.gettext = cls.gettext
+
+    def save(self, *args, **kwargs):
+        try:
+            type(self).CACHE[self.message] = self
+            super().save(*args, **kwargs)
+        except Exception as error:
+            type(self).CACHE.pop(self.message, None)
+            raise Exception from error

@@ -1,9 +1,3 @@
-/*
-* @Author: MaxST
-* @Date:   2019-11-09 13:52:25
-* @Last Modified by:   MaxST
-* @Last Modified time: 2019-12-15 17:15:01
-*/
 (function ($) {
   "use strict";
   window.generic_view_json = function (url, text) {

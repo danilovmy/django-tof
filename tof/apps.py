@@ -1,29 +1,23 @@
 # -*- coding: utf-8 -*-
-# @Author: MaxST
-# @Date:   2019-10-29 10:05:01
-# @Last Modified by:   MaxST
-# @Last Modified time: 2019-11-22 14:24:05
 import sys
 
 from django.apps import AppConfig
+from django.db.models.signals import post_migrate
 from django.db import connection
 
 
 class TofConfig(AppConfig):
-    """Класс настроек приложения.
-
-    Тут будем при старте сервера кэшировать список переводимых полей
-
-    Attributes:
-        name: Имя приложения
-    """
     name = 'tof'
+    __patched = False
 
     def ready(self):
-        # Exception if did not make migration
-        if connection.introspection.table_names():
-            for arg in ('migrate', 'makemigrations'):
-                if arg in sys.argv:
-                    return  # pragma: no cover
-            for field in self.models_module.TranslatableField.objects.all():
-                field.add_translation_to_class()
+        if {'test', 'migrate', 'makemigrations'}.intersection(set(sys.argv)):
+            post_migrate.connect(self.patch, sender=self)
+        elif 'tof_translatablefield' in connection.introspection.table_names():
+            self.patch()
+
+    def patch(self, *args, **kwargs):
+        if not self.__patched:
+            self.models['translatablefield'].objects.patch_fields()
+            self.models['staticmessagetranslation'].patch_djangotranslation()
+            self.__patched = True

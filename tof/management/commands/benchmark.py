@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-# @Author: MaxST
-# @Date:   2019-11-25 13:13:55
-# @Last Modified by:   MaxST
-# @Last Modified time: 2019-11-25 15:24:50
 import timeit
 
 from django.contrib.contenttypes.models import ContentType

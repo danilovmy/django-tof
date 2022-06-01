@@ -1,35 +1,39 @@
 # -*- coding: utf-8 -*-
-# @Author: MaxST
-# @Date:   2019-10-30 14:19:55
-# @Last Modified by:   MaxST
-# @Last Modified time: 2019-12-01 15:56:34
-from django.utils.html import html_safe
-from django.utils.translation import get_language
-from .settings import DEFAULT_LANGUAGE, FALLBACK_LANGUAGES, SITE_ID
+from . import DEFAULT_LANGUAGE, get_language
 
 
-@html_safe
 class TranslatableText(str):
-    def __getattr__(self, attr):
-        if len(attr) == 2:
-            attrs = vars(self)
-            for lang in self.get_fallback_languages(attr):
-                if lang in attrs:
-                    return attrs[lang]
-            return attrs.get('_origin') or ''
-        raise AttributeError(attr)
+    """Class like a string but returns values depends on get_language."""
+    DEFAULT = DEFAULT_LANGUAGE
+
+    def __setattr__(self, attr, value):
+        vars(self)[attr] = str(value) if value else ''
+        if not value and len(attr) == 2:
+            delattr(self, attr)
+
+    def __setitem__(self, attr, value):
+        if isinstance(attr, str):
+            setattr(self, attr, value)
+
+    def __delattr__(self, attr):
+        vars(self).pop(attr, None)
+
+    def __delitem__(self, attr):
+        if isinstance(attr, str):
+            delattr(self, attr)
 
     def __getitem__(self, key):
-        return str(self)[key]
+        return getattr(self, key, None) if isinstance(key, str) else f'{self}'[key]
 
     def __str__(self):
-        return getattr(self, self.get_lang(), '')
+        __, value = next(self.iter, (None, None))
+        return f'{value or self["_origin"] or str()}'
 
     def __repr__(self):
-        return f"'{self}'"
+        return f'{self} {vars(self).keys()}'
 
     def __eq__(self, other):
-        return str(self) == str(other)
+        return f'{self}' == f'{other}'
 
     def __add__(self, other):
         return f'{self}{other}'
@@ -37,15 +41,35 @@ class TranslatableText(str):
     def __radd__(self, other):
         return f'{other}{self}'
 
-    def __bool__(self):
-        return bool(vars(self))
+    def __len__(self):
+        return len(f'{self}')
 
+    def __bool__(self):
+        return bool(next(self.iter, None) or self['_origin'])
+
+    def update(self, **kwargs):
+        for attr, value in kwargs.items():
+            setattr(self, attr, value)
+        return self
+
+    def __iter__(self):
+        yield from str(self)
+
+    @property
+    def iter(self):
+        langs = dict.fromkeys((self.get_lang(), self.DEFAULT, *(lang for lang in vars(self).keys() if len(lang) == 2)), )
+        yield from ((lang, value) for lang, value in ((lang, getattr(self, lang, None)) for lang in langs) if value)
+
+    @property
+    def current(self):
+        return getattr(self, self.get_lang(), None)
+
+    def update_current(self, value):
+        setattr(self, self.get_lang(), value)
+        return self
+
+    # TODO: make staticmethod a property
     @staticmethod
     def get_lang():
-        lang, *_ = get_language().partition('-')
-        return lang
-
-    def get_fallback_languages(self, attr):
-        for fallback in (FALLBACK_LANGUAGES.get(attr) or (), FALLBACK_LANGUAGES.get(SITE_ID) or ()):
-            yield from (lang for lang in fallback if lang != attr)
-        yield DEFAULT_LANGUAGE
+        lang = get_language() or 'en'
+        return lang[:2]
