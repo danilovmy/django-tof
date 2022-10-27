@@ -104,18 +104,5 @@ and "objects" becomes the standard manager inherited from standard with adding t
 
 ## Requirements
 
-  - Python (\>=3.6)
-  - Django (\>=2.2)
-
-## How to start development
-
-  1. Fork this project
-  2. Clone the repo
-  3. Create new branch
-  4. **Change directory `example_project`**
-  5. You can use  [pyenv](https://github.com/pyenv/pyenv) to select the version of python `pyenv local 3.8.0`
-  6. We are using [poetry](https://poetry.eustace.io/docs/#installation)
-  7. Run: `poetry env use python` to use your python version.
-  8. Run: `poetry install` to install all requirements.
-  9. Run: `poetry shell` for activation virtual environment.
-  10. Run: `python manage.py runserver` to start the development server.
+  - Python (\>=3.9)
+  - Django (\>=3.1)
