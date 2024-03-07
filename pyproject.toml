@@ -2,25 +2,20 @@
 name = 'django-tof'
 version = "0.3.2"
 description = 'Translate fields of django models without having to restart the server,  without changing the model code.'
-authors = ['MaxST <mstolpasov@gmail.com>']
+authors = ['Danilov Maxim <maxim@wpshop.at>']
 license = 'MIT'
-repository = 'https://github.com/mom1/django-tof'
-homepage = 'https://github.com/mom1/django-tof/wiki/django-tof'
+repository = 'https://github.com/danilovmy/django-tof'
+homepage = 'https://django-tof.readthedocs.io/'
 keywords = ['translations', 'translate', 'django', 'model']
 readme = 'README.md'
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Web Environment',
-    'Framework :: Django',
-    'Framework :: Django :: 2.2',
-    'Framework :: Django :: 3.0',
+    'Framework :: Django ^3.0',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: ^3.7',
     'Topic :: Database',
     'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     'Topic :: Text Processing :: Linguistic'
@@ -32,8 +27,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = '^3.6'
-django = '>=2.2'
+python = '^3.7'
+django = '3.0'
 
 [tool.poetry.dev-dependencies]
 
