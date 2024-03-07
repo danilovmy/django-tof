@@ -1,8 +1,9 @@
 Django-TOC Library API
 =================
-.. module:: toc
-
+.. automodule:: toc
+    :members:
 
 Example
 =================
-.. module:: example_project
+.. automodule:: example_project
+    :members:
