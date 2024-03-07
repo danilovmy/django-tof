@@ -3,7 +3,6 @@ Read the Django-TOF Docs
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: TOC API
+   :maxdepth: 3
 
     toc_api

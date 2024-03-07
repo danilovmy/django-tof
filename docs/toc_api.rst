@@ -1,14 +1,8 @@
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
 Django-TOC Library API
 =================
-.. automodule:: toc
-   :members:
+.. module:: toc
+
 
 Example
 =================
-.. automodule:: example_project
-   :members:
+.. module:: example_project
