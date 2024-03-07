@@ -13,6 +13,8 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+os.environ["SPHINX_DOC_BUILD"] = "1"
+import sphinx_rtd_theme
 
 
 # -- Project information -----------------------------------------------------
@@ -31,6 +33,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
+    "sphinx_rtd_theme"
 ]
 autosectionlabel_prefix_document = True
 
