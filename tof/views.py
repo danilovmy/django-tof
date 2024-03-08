@@ -21,8 +21,8 @@ class YesNoMixIn:
     POSITIVE_TEXT = _('Yes, I\'m sure')
     NEGATIVE_TEXT = _('No, I\'m not sure')
     CHOICES = ((POSITIVE, POSITIVE_TEXT), (NEGATIVE, NEGATIVE_TEXT))
-    button_template = '<button type="{submit}" name="answer" value="{value}">{title}</button>'.format
-    button_negative_template = '<a href="#" class="button cancel-link">{title}</a>'.format
+    button_template = '<button type=\"{submit}\" name=\"answer\" value=\"{value}\">{title}</button>'
+    button_negative_template = '<a href="#" class="button cancel-link">{title}</a>'
     answer_help_text = answer_label = ''
     method = 'POST'
     process_url = ''
@@ -59,7 +59,7 @@ class YesNoMixIn:
 
     def _render_button(self, value, text, template=None):
         template = template or self.button_template
-        return mark_safe(template(submit='submit', name=self.add_prefix('answer'), value=value, title=str(text)))
+        return mark_safe(template.format(submit='submit', name=self.add_prefix('answer'), value=value, title=str(text)))
 
     def render_button_positive(self):
         return self._render_button(*self._get_choice('POSITIVE'))
@@ -70,7 +70,7 @@ class YesNoMixIn:
 
 class YesNoForm(YesNoMixIn, forms.Form):
     prefix = 'YesNoForm'
-    button_template = '<button type="{submit}" name="{name}" onclick="document.getElementById(`layer`).style.display = `block`;" value="{value}">{title}</button>'.format
+    button_template = '<button type="{submit}" name="{name}" onclick="document.getElementById(`layer`).style.display = `block`;" value="{value}">{title}</button>'
     answer = forms.ChoiceField(choices=YesNoMixIn.CHOICES, widget=forms.RadioSelect())
 
 
