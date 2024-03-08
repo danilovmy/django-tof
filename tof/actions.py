@@ -1,9 +1,8 @@
 import subprocess
 
-from core.actions import ActionView
-from settings import default_translator as _
+from tof import default_translator as _
 from tof.management.commands.create_js_from_static_translation import Command
-
+from tof.views import ActionView
 
 class GenerateTranslationJSONFileAction(ActionView):
     description = _('Generate translation JSON file for front')

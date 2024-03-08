@@ -12,15 +12,20 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('.'))
+import django
+from django.conf import ENVIRONMENT_VARIABLE
+from pathlib import Path
+
+if not os.getenv(ENVIRONMENT_VARIABLE):
+    sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
+    os.environ[ENVIRONMENT_VARIABLE] = "tof.tests.settings"
+    django.setup()
 
 # -- Project information -----------------------------------------------------
 
 project = 'django-tof'
 copyright = '2024, Maxim Danilov aka danilovmy'
 author = 'Maxim Danilov'
-
 
 # -- General configuration ---------------------------------------------------
 

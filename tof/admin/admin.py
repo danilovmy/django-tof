@@ -14,17 +14,18 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import CharField, Q, TextField, ForeignKey, DO_NOTHING
 from django.contrib.admin.widgets import AutocompleteSelect
 
-from core.actions import ActionViewsMixin
-from admins.admin import production_admin
+from tof.views import ActionViewsMixin
 from tof.actions import GenerateTranslationJSONFileAction, VueI18NExtractAction
 from tof.forms import TranslationsForm, TranslationsInLineForm
 from tof.models import Language, TranslatableField, Translation, StaticMessageTranslation
 
 # Get an instance of a logger
 logger = logging.getLogger('django')
+translation_adminsite_name = 'translations'  # todo get from settings
+translations_admin = next((site for site in admin.sites.all_sites if site.name == translation_adminsite_name), None) or admin.sites.site
 
 
-@admin.register(ContentType, site=production_admin)
+@admin.register(ContentType, site=translations_admin)
 class ContentTypeAdmin(admin.ModelAdmin):
     search_fields = ('app_label', 'model')
 
@@ -42,7 +43,7 @@ class ContentTypeAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(Language, site=production_admin)
+@admin.register(Language, site=translations_admin)
 class LanguageAdmin(admin.ModelAdmin):
     search_fields = ('iso', )
     list_display = ('iso', 'is_active')
@@ -71,7 +72,7 @@ class ModelFieldIterator():
         return f'{self.id}'
 
 
-@admin.register(TranslatableField, site=production_admin)
+@admin.register(TranslatableField, site=translations_admin)
 class TranslatableFieldAdmin(admin.ModelAdmin):
     search_fields = ('content_type__model', 'name')
     list_display = ('content_type', 'name')
@@ -129,7 +130,7 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
         return [ModelFieldIterator(field) for field in content_type.model_class()._meta.get_fields() if isinstance(field, (TextField, CharField)) and field.column != 'password' and field.name not in existed], False
 
 
-@admin.register(Translation, site=production_admin)
+@admin.register(Translation, site=translations_admin)
 class TranslationAdmin(admin.ModelAdmin):
     form = TranslationsForm
     list_display = ('content_object', 'lang', 'field', 'value')
@@ -189,7 +190,7 @@ class TranslationTabularInline(TranslationInline, GenericTabularInline):
     pass
 
 
-@admin.register(StaticMessageTranslation, site=production_admin)
+@admin.register(StaticMessageTranslation, site=translations_admin)
 class StaticMessageTranslationAdmin(ActionViewsMixin, admin.ModelAdmin):
     fields = ('message', 'translation')
     search_fields = ('message', 'translation')
