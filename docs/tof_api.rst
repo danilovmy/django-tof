@@ -5,5 +5,4 @@ Django-TOC Library API
     :maxdepth: 3
     :caption: Django-TOF API
 
-.. automodule:: tof
-    :members:
+.. module:: tof
