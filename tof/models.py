@@ -27,6 +27,7 @@ class TranslationQueryset(QuerySet):
 
 
 class Translation(models.Model):
+    """ First important model to understand what happens here. """
 
     class Meta:
         verbose_name = _('Translation')

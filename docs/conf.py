@@ -17,7 +17,9 @@ from django.conf import ENVIRONMENT_VARIABLE
 from pathlib import Path
 
 if not os.getenv(ENVIRONMENT_VARIABLE):
+    sys.path.insert(0, str(Path(__file__).parent.absolute()))
     sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.absolute()))
     os.environ[ENVIRONMENT_VARIABLE] = "tof.tests.settings"
     django.setup()
 
