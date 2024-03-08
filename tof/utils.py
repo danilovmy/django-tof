@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-from . import DEFAULT_LANGUAGE, get_language
+from django.conf import settings
+from . import get_language
 
 
 class TranslatableText(str):
     """Class like a string but returns values depends on get_language."""
-    DEFAULT = DEFAULT_LANGUAGE
 
     def __setattr__(self, attr, value):
         vars(self)[attr] = str(value) if value else ''
@@ -73,3 +72,7 @@ class TranslatableText(str):
     def get_lang():
         lang = get_language() or 'en'
         return lang[:2]
+
+    @property
+    def DEFAULT(self):
+        return getattr(settings, 'DEFAULT_LANGUAGE', None) or 'en'

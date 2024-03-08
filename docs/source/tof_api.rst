@@ -1,8 +1,8 @@
 Django-TOC Library API
 ======================
 
-.. autosummary::
-   :toctree: generated
+.. toctree::
+    :maxdepth: 3
 
 .. automodule:: tof.admin
    :members:

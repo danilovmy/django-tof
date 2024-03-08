@@ -17,8 +17,6 @@ from django.conf import ENVIRONMENT_VARIABLE
 from pathlib import Path
 
 if not os.getenv(ENVIRONMENT_VARIABLE):
-    sys.path.insert(0, str(Path(__file__).parent.absolute()))
-    sys.path.insert(0, str(Path(__file__).parent.parent.absolute()))
     sys.path.insert(0, str(Path(__file__).parent.parent.parent.absolute()))
     os.environ[ENVIRONMENT_VARIABLE] = "tof.tests.settings"
     django.setup()
@@ -36,14 +34,11 @@ author = 'Maxim Danilov'
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
-    "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.githubpages",
     "sphinx_rtd_theme"
 ]
+
 autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +47,7 @@ autosectionlabel_prefix_document = True
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-# exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+# exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -74,7 +69,7 @@ html_theme = "sphinx_rtd_theme"
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-add_module_names = False
+add_module_names = True
 htmlhelp_basename = "django-TOF: translations on fly"
 
 # intersphinx documentation
