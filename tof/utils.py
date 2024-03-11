@@ -75,4 +75,5 @@ class TranslatableText(str):
 
     @property
     def DEFAULT(self):
-        return getattr(settings, 'DEFAULT_LANGUAGE', None) or 'en'
+        response = vars(self)['DEFAULT'] = getattr(settings, 'DEFAULT_LANGUAGE', None) or 'en'
+        return response
