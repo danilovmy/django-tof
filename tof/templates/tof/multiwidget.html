@@ -8,7 +8,7 @@
             <div class="tab">{{subwidget.render}}</div>
         {% endfor %}
         {% if add_related_url %}{% load i18n static %}
-            <a class="ltab related-widget-wrapper-link add-language" data-id-template="{{ widget.attrs.id }}" data-name-template="{{ widget.name }}" id="lang_{{ widget.attrs.id }}" href='{{add_related_url}}?_to_field=iso&amp;_popup=1' title="{% trans 'Add another Language' %}">
+            <a class="ltab related-widget-wrapper-link add-language" data-popup="yes" data-id-template="{{ widget.attrs.id }}" data-name-template="{{ widget.name }}" id="lang_{{ widget.attrs.id }}" href='{{add_related_url}}?_to_field=iso&amp;_popup=1' title="{% trans 'Add another Language' %}">
                 <img src="{% static 'admin/img/icon-addlink.svg' %}" alt="{% trans 'Add' %}">
             </a>
         {% endif %}

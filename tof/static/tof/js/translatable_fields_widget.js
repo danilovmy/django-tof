@@ -1,7 +1,7 @@
 (function ($) {
   "use strict";
   function dismissRelatedLookupPopupLang(win, chosenId) {
-    var elem = document.getElementById(win.name);
+    var elem = document.getElementById(win.name.split('__', 1)[0]);
     win.close();
     if (elem.className.includes("ltab")) {
 

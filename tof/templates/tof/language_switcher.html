@@ -1,0 +1,8 @@
+{% load i18n %}
+<form action="{% url 'set_language' %}?next={{ request.path }}{% if request.META.QUERY_STRING %}?{{ request.META.QUERY_STRING }}{% endif %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    {% get_available_languages as LANGUAGES %}
+    {% for language, language_title in LANGUAGES %}
+        <button type="submit" name="language" value="{{ language }}" {% if LANGUAGE_CODE == language %}disabled{% endif %} style="display:inline-block;">{{ language }}</button>
+    {% endfor %}
+</form>

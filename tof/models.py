@@ -38,8 +38,8 @@ class Translation(models.Model):
     object_id = models.PositiveIntegerField(help_text=_('First set the field'))
     content_object = GenericForeignKey()
 
-    field = models.ForeignKey('TranslatableField', related_name='translations', on_delete=models.DO_NOTHING)
-    lang = models.ForeignKey('Language', related_name='translations', limit_choices_to=Q(is_active=True), on_delete=models.DO_NOTHING)
+    field = models.ForeignKey('TranslatableField', related_name='translations', on_delete=models.SET_NULL, null=True, blank=True)
+    lang = models.ForeignKey('Language', related_name='translations', to_field='iso', limit_choices_to=Q(is_active=True), on_delete=models.DO_NOTHING)
     value = models.TextField(_('Value'), help_text=_('Value field'))
 
     objects = TranslationQueryset.as_manager()
