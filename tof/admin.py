@@ -3,16 +3,15 @@ import logging
 
 from django import forms
 from django.contrib import admin
-
 from django.contrib.admin.options import IS_POPUP_VAR
+from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.contenttypes.admin import (
     GenericInlineModelAdmin, GenericStackedInline, GenericTabularInline,
 )
-from django.forms.models import ModelChoiceIterator
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import CharField, Q, TextField, ForeignKey, DO_NOTHING
-from django.contrib.admin.widgets import AutocompleteSelect
+from django.forms.models import ModelChoiceIterator
 
 from tof.views import ActionViewsMixin
 from tof.actions import GenerateTranslationJSONFileAction, VueI18NExtractAction
@@ -25,7 +24,8 @@ translation_adminsite_name = 'translations'  # todo get from settings
 translations_admin = next((site for site in admin.sites.all_sites if site.name == translation_adminsite_name), None) or admin.sites.site
 
 
-@admin.register(ContentType, site=translations_admin)
+
+@admin.register(ContentType, site=TranslationSiteAdmin)
 class ContentTypeAdmin(admin.ModelAdmin):
     search_fields = ('app_label', 'model')
 
@@ -43,7 +43,7 @@ class ContentTypeAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(Language, site=translations_admin)
+@admin.register(Language, site=TranslationSiteAdmin)
 class LanguageAdmin(admin.ModelAdmin):
     search_fields = ('iso', )
     list_display = ('iso', 'is_active')
@@ -54,8 +54,11 @@ class LanguageAdmin(admin.ModelAdmin):
         query = Q(is_active=True) if IS_POPUP_VAR in request.GET or 'autocomplete' in request.path else Q()
         return queryset.filter(query), use_distinct
 
+    def has_view_permission(self, request, obj=None):
+        return True
 
-class ModelFieldIterator():
+
+class ModelFieldIterator:
 
     def __init__(self, field):
         self.field = field
@@ -72,7 +75,7 @@ class ModelFieldIterator():
         return f'{self.id}'
 
 
-@admin.register(TranslatableField, site=translations_admin)
+@admin.register(TranslatableField, site=TranslationSiteAdmin)
 class TranslatableFieldAdmin(admin.ModelAdmin):
     search_fields = ('content_type__model', 'name')
     list_display = ('content_type', 'name')
@@ -130,7 +133,7 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
         return [ModelFieldIterator(field) for field in content_type.model_class()._meta.get_fields() if isinstance(field, (TextField, CharField)) and field.column != 'password' and field.name not in existed], False
 
 
-@admin.register(Translation, site=translations_admin)
+@admin.register(Translation, site=TranslationSiteAdmin)
 class TranslationAdmin(admin.ModelAdmin):
     form = TranslationsForm
     list_display = ('content_object', 'lang', 'field', 'value')
@@ -190,19 +193,22 @@ class TranslationTabularInline(TranslationInline, GenericTabularInline):
     pass
 
 
-@admin.register(StaticMessageTranslation, site=translations_admin)
+@admin.register(StaticMessageTranslation, site=TranslationSiteAdmin)
 class StaticMessageTranslationAdmin(ActionViewsMixin, admin.ModelAdmin):
     fields = ('message', 'translation')
     search_fields = ('message', 'translation')
     readonly_fields = ('message', 'languages')
-    list_display = ('message', 'languages')
+    list_display = ('__str__', 'languages')
     actions = (GenerateTranslationJSONFileAction.as_view(), VueI18NExtractAction.as_view())
 
     def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.has_perm('accounts.is_translator')
 
     def get_queryset(self, request):
         return super().get_queryset(request).distinct()

@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.contrib.admin.sites import all_sites
 from django.db.models import Q
+from django.templatetags.i18n import GetAvailableLanguagesNode, settings
+from django.utils.module_loading import import_string
+
+from . import LANGUAGES_SOURCE
 from .fields import TranslatableFieldFormField
 
 
@@ -15,6 +19,7 @@ class ClassPatcherMixin:
         if not issubclass(target, cls):
             target = hasattr(target, '_meta') and getattr(target._meta, 'concrete_model', None) or target
             target.__bases__ = (cls, ) + target.__bases__
+
 
     @classmethod
     def unpatch_bases(cls, target, *args):
@@ -120,12 +125,40 @@ class TofAdminMixin(InstancePatcherMixin):
 
     @classmethod
     def patch_unpatch(cls, patch, model, fields):
-        for modeladmin in cls.get_admins(model):
-            getattr(cls, f'{patch}_bases')(modeladmin, fields)
+        for model_admin in cls.get_admins(model):
+            getattr(cls, f'{patch}_bases')(model_admin, fields)
 
     @staticmethod
     def get_admins(model):
-        yield from (site.get_admin(model) for site in all_sites if site.is_registered(model))
+        yield from (site._registry[model] for site in all_sites if site.is_registered(model))
+
+
+class TofInlineMixin(ClassPatcherMixin):
+    _inlines_cache = {}
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super(TofInlineMixin, self).get_formset(request, obj=obj, **kwargs)
+        TranslationFieldModelFormMixin.patch_bases(formset.form)
+        return formset
+
+    @classmethod
+    def patch_unpatch(cls, patch, model, fields):
+        for inline in cls.get_inlines(model):
+            getattr(cls, f'{patch}_bases')(inline, fields)
+
+    @classmethod
+    def set_inlines(cls):
+        for site in all_sites:
+            for admin in site._registry.values():
+                for inline in admin.inlines:
+                    cls._inlines_cache[inline.model] = cls._inlines_cache.get(inline.model, set())
+                    cls._inlines_cache[inline.model].add(inline)
+
+    @classmethod
+    def get_inlines(cls, model):
+        if not cls._inlines_cache:
+            cls.set_inlines()
+        return cls._inlines_cache.get(model, tuple())
 
 
 def apply_mixins(patch, target_cls, fields):
@@ -133,3 +166,22 @@ def apply_mixins(patch, target_cls, fields):
     getattr(TranslationFieldMixin, f'{patch}_bases')(target_cls, fields)
     getattr(TranslationManagerMixin, f'{patch}_bases')(target_cls.objects, fields)
     TofAdminMixin.patch_unpatch(patch, target_cls, fields)
+    TofInlineMixin.patch_unpatch(patch, target_cls, fields)
+
+
+def load_languages(request):
+    source = getattr(settings, 'LANGUAGES_SOURCE', LANGUAGES_SOURCE)
+    if source and request:
+        source = import_string(source)
+        if hasattr(source, 'objects') and hasattr(source.objects, 'get_choices_by'):
+            return source.objects.get_choices_by(request)
+
+
+def wrapper(func):
+    def wrapped(self, context):
+        context[self.variable] = load_languages(context.get('request')) or func(context)
+        return ''
+    return wrapped
+
+
+GetAvailableLanguagesNode.render = wrapper(GetAvailableLanguagesNode.render)

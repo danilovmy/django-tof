@@ -149,9 +149,19 @@ class TranslatableField(models.Model):
     def unpatch_field(self, target_cls, fields):
         if getattr(target_cls, self.name, None):
             field = getattr(target_cls, self.name, None)
-            delattr(field.replaced_field.field, 'pre_save')
-            setattr(target_cls, self.name, field.replaced_field)
+            if hasattr(field, 'replaced_field'):
+                delattr(field.replaced_field.field, 'pre_save')
+                setattr(target_cls, self.name, field.replaced_field)
             fields.pop(self.pk, None)
+
+
+class LanguageQuerySet(QuerySet):
+
+    def active(self):
+        return self.filter(is_active=True)
+
+    def get_choices_by(self, *args, **kwargs):
+        return ((obj.iso, str(obj)) for obj in self.active())
 
 
 class Language(models.Model):
@@ -161,11 +171,21 @@ class Language(models.Model):
         verbose_name_plural = _('Languages')
         ordering = ['iso']
 
-    iso = models.CharField(max_length=2, unique=True, primary_key=True)
+    iso = models.CharField(max_length=2, unique=True)
     is_active = models.BooleanField(_(u'Active'), default=True)
+
+    objects = LanguageQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.iso or str()}'
+
+
+class ThroughLanguage(models.Model):
+
+    class Meta:
+        abstract = True
+
+    language = models.ForeignKey(Language, on_delete=models.CASCADE, to_field='iso', limit_choices_to=Q(is_active=True))
 
 
 class StaticMessageTranslation(models.Model):
@@ -198,7 +218,7 @@ class StaticMessageTranslation(models.Model):
                 messages = cls.objects.filter(message=message)[:2]
                 cls.CACHE[message] = messages[0] if len(messages) else cls.objects.create(message=message)
                 if len(messages) > 1:
-                    cls.objects.exclude(pk=cls.CACHE[message].pk).delete(message=message)
+                    cls.objects.exclude(pk=cls.CACHE[message].pk).filter(message=message).delete()
             except Exception as error:
                 print(message, repr(error), error, getattr(error, 'args', None), error.__context__, error.__cause__,)
                 return str(message)
@@ -221,3 +241,4 @@ class StaticMessageTranslation(models.Model):
         except Exception as error:
             type(self).CACHE.pop(self.message, None)
             raise Exception from error
+
