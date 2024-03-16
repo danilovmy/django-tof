@@ -36,14 +36,17 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
     "sphinx_rtd_theme"
 ]
 
 autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 2
 
+autosummary_generate = True
+
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ['_templates']
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

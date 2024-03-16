@@ -1,37 +1,51 @@
 [tool.poetry]
-name = 'django-tof'
-version = "0.3.2"
-description = 'Translate fields of django models without having to restart the server,  without changing the model code.'
-authors = ['Danilov Maxim <maxim@wpshop.at>']
-license = 'MIT'
-repository = 'https://github.com/danilovmy/django-tof'
-homepage = 'https://django-tof.readthedocs.io/'
-keywords = ['translations', 'translate', 'django', 'model']
-readme = 'README.md'
+name = "django-tof"
+version = "2.0.1"
+description = "Translate fields of django models without having to restart the server,  without changing the model code."
+authors = ["Danilov Maxim <maxim@wpshop.at>"]
+license = "MIT"
+repository = "https://github.com/danilovmy/django-tof"
+homepage = "https://django-tof.readthedocs.io/"
+keywords = ["translations", "translate", "django", "model", "translation-management"]
+readme = "README.md"
+
 classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Environment :: Web Environment',
-    'Framework :: Django ^3.0',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python :: ^3.7',
-    'Topic :: Database',
-    'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-    'Topic :: Text Processing :: Linguistic'
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django ^3.0",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: ^3.7",
+    "Topic :: Database",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Text Processing :: Linguistic"
 ]
-include = ['AUTHORS']
-exclude = ['setup.cfg']
-packages = [
-    { include = 'tof' },
-]
+
+exclude = ["tof/tests"]
+packages = [{ include = "tof" }]
 
 [tool.poetry.dependencies]
-python = '^3.7'
-django = '^3.0'
+python = "^3.9"
+django = "^3.1"
 
 [tool.poetry.dev-dependencies]
+ruff="*"
 
 [build-system]
-requires = ['poetry>=0.12']
-build-backend = 'poetry.masonry.api'
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 320
+target-version = "py39"
+select = ["F", "I", "UP"] # isort, # pyflakes, # upgrade syntax for new PYthon versions
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "single"
+avoid-escape = true
+
+[tool.ruff.format]
+quote-style = "single"
