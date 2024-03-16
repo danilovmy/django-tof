@@ -12,11 +12,11 @@ readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
-    "Framework :: Django ^3.0",
+    "Framework :: Django >=3.0",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: ^3.7",
+    "Programming Language :: Python :: >=3.7",
     "Topic :: Database",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
     "Topic :: Text Processing :: Linguistic"
@@ -26,8 +26,8 @@ exclude = ["tof/tests"]
 packages = [{ include = "tof" }]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-django = "^3.1"
+python = ">=3.9"
+django = ">=3.1"
 
 [tool.poetry.dev-dependencies]
 ruff="*"
