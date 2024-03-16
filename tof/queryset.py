@@ -1,5 +1,5 @@
 # This  classes sind Prototypes To add normal Translatable functionality to every Queryset function
-# I want change SQL compiler method and change queryset on the end of querset methods chain
+# I want change SQL compiler method and change queryset on the end of queryset methods chain
 
 
 class CompilerMixIn:

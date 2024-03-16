@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import messages
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
@@ -8,12 +9,11 @@ from django.template.loader import render_to_string, select_template
 from django.utils.decorators import classonlymethod
 from django.utils.encoding import force_str
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.views.generic import FormView
 
-from django import forms
-from django.utils.safestring import mark_safe
+from .. import default_translator as _
 
-from tof import default_translator as _
 
 class YesNoMixIn:
     POSITIVE = 'yes'

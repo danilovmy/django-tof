@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 from django.core.exceptions import ValidationError
 from django.forms.fields import MultiValueField
 
-from .widgets import TranslatableFieldHiddenWidget, TranslatableFieldWidget
 from .utils import TranslatableText
+from .widgets import TranslatableFieldHiddenWidget, TranslatableFieldWidget
 
 
 class TranslatableFieldFormField(MultiValueField):

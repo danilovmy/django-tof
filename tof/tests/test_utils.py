@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
-from django.utils.crypto import get_random_string
 from django.utils import translation
+from django.utils.crypto import get_random_string
 
 from ..utils import TranslatableText
 

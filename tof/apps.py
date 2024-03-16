@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 import sys
 
 from django.apps import AppConfig
-from django.db.models.signals import post_migrate
 from django.db import connection
+from django.db.models.signals import post_migrate
 
 
 class TofConfig(AppConfig):

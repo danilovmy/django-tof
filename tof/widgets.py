@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
-from django.forms.widgets import MultiWidget, Media
-from django.utils.safestring import mark_safe
 from django.contrib.admin.sites import all_sites
-from django.urls.exceptions import NoReverseMatch
+from django.forms.widgets import Media, MultiWidget
 from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
+from django.utils.safestring import mark_safe
+
 from . import get_language
 
 

@@ -1,10 +1,12 @@
 
-from pathlib import Path
 import importlib
-from os import getenv, environ
 import sys
-from django.conf import ENVIRONMENT_VARIABLE
+from os import environ, getenv
+from pathlib import Path
+
 import django
+from django.conf import ENVIRONMENT_VARIABLE
+
 if not getenv(ENVIRONMENT_VARIABLE):
     path = Path(__file__).parent.parent.parent
     sys.path.insert(0, str(path.absolute()))

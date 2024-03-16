@@ -1,22 +1,19 @@
-# -*- coding: utf-8 -*-
 import logging
 
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.widgets import AutocompleteSelect
-from django.contrib.contenttypes.admin import (
-    GenericInlineModelAdmin, GenericStackedInline, GenericTabularInline,
-)
+from django.contrib.contenttypes.admin import GenericInlineModelAdmin, GenericStackedInline, GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import CharField, Q, TextField, ForeignKey, DO_NOTHING
+from django.db.models import DO_NOTHING, CharField, ForeignKey, Q, TextField
 from django.forms.models import ModelChoiceIterator
 
-from .views import ActionViewsMixin
 from .actions import GenerateTranslationJSONFileAction, VueI18NExtractAction
 from .forms import TranslationsForm, TranslationsInLineForm
-from .models import Language, TranslatableField, Translation, StaticMessageTranslation
+from .models import Language, StaticMessageTranslation, TranslatableField, Translation
+from .views import ActionViewsMixin
 
 # Get an instance of a logger
 logger = logging.getLogger('django')

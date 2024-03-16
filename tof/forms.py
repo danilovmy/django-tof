@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 from functools import wraps
-from django.forms import ModelForm
+
 from django.contrib.contenttypes.models import ContentType
+from django.forms import ModelForm
 
 
 class TranslationsForm(ModelForm):

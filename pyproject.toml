@@ -49,3 +49,6 @@ avoid-escape = true
 
 [tool.ruff.format]
 quote-style = "single"
+
+[tool.ruff.isort]
+force-single-line = true

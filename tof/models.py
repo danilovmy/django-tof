@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
-
-from django.db import models, transaction
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.db import models, transaction
 from django.db.models import Q, QuerySet
 from django.utils.safestring import mark_safe
 from django.utils.translation.trans_real import DjangoTranslation
 
-from .utils import TranslatableText
 from . import default_translator as _
 from .mixins import apply_mixins
+from .utils import TranslatableText
 
 
 class TranslationQueryset(QuerySet):

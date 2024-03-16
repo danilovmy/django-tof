@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
 import timeit
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.utils import translation
-from ..models import TranslatableField, StaticMessageTranslation
 from django.utils.crypto import get_random_string
+
+from ..models import StaticMessageTranslation, TranslatableField
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):

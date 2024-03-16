@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.contrib.admin.sites import all_sites
 from django.db.models import Q
 from django.templatetags.i18n import GetAvailableLanguagesNode, settings

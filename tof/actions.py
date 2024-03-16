@@ -1,7 +1,9 @@
 import subprocess
-
-from django.utils.translation import gettext_lazy as _, get_language
 from pathlib import Path
+
+from django.utils.translation import get_language
+from django.utils.translation import gettext_lazy as _
+
 from .management.commands.create_js_from_static_translation import Command
 from .views import ActionView
 
