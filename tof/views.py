@@ -12,7 +12,7 @@ from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.views.generic import FormView
 
-from .. import _
+from . import _
 
 
 class YesNoMixIn:
