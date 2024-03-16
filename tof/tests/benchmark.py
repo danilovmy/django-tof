@@ -4,7 +4,7 @@ import timeit
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.utils import translation
-from tof.models import TranslatableField, StaticMessageTranslation
+from ..models import TranslatableField, StaticMessageTranslation
 from django.utils.crypto import get_random_string
 
 class Command(BaseCommand):

@@ -1,9 +1,9 @@
 import subprocess
 
-from tof import default_translator as _
+from django.utils.translation import gettext_lazy as _, get_language
 from pathlib import Path
-from tof.management.commands.create_js_from_static_translation import Command
-from tof.views import ActionView
+from .management.commands.create_js_from_static_translation import Command
+from .views import ActionView
 
 
 class GenerateTranslationJSONFileAction(ActionView):
@@ -15,7 +15,7 @@ class GenerateTranslationJSONFileAction(ActionView):
     def processing(self, *args, **kwargs):
         if Path(f'{Command.locale_dir}').exists():
             current_lang_file = Path(f'{Command.locale_dir}') / f'{get_language()}.json'
-            if not current_lang_file.exists(): 
+            if not current_lang_file.exists():
                 open(current_lang_file, 'a').close()
             Command().handle()
             return super(GenerateTranslationJSONFileAction, self).processing(*args, **kwargs)

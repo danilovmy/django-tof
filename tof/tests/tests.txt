@@ -16,15 +16,15 @@ from django.urls import reverse
 from django.utils.translation import activate, override
 # from main.models import Vintage, Wine, Winery
 from mixer.backend.django import mixer
-from tof.admin import (
+from .admin import (
     ContentTypeAdmin, LanguageAdmin, TranslatableFieldAdmin, TranslationAdmin,
 )
-from tof.fields import TranslatableFieldFormField
-from tof.models import (
+from .fields import TranslatableFieldFormField
+from .models import (
     Language, TranslatableField, Translation, TranslationFieldMixin,
 )
-from tof.settings import FALLBACK_LANGUAGES
-from tof.utils import TranslatableText
+from .settings import FALLBACK_LANGUAGES
+from .utils import TranslatableText
 
 site = admin.AdminSite(name='admin')
 

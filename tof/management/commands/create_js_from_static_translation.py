@@ -3,7 +3,7 @@ import os
 
 from django.core.management import BaseCommand
 
-from tof.models import StaticMessageTranslation, Language
+from ...models import StaticMessageTranslation, Language
 
 
 class Command(BaseCommand):

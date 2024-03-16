@@ -2,7 +2,7 @@ from django.test import SimpleTestCase
 from django.utils.crypto import get_random_string
 from django.utils import translation
 
-from tof.utils import TranslatableText
+from ..utils import TranslatableText
 
 
 class TestTranslatableTextIntegration(SimpleTestCase):

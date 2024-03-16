@@ -13,17 +13,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import CharField, Q, TextField, ForeignKey, DO_NOTHING
 from django.forms.models import ModelChoiceIterator
 
-from tof.views import ActionViewsMixin
-from tof.actions import GenerateTranslationJSONFileAction, VueI18NExtractAction
-from tof.forms import TranslationsForm, TranslationsInLineForm
-from tof.models import Language, TranslatableField, Translation, StaticMessageTranslation
+from .views import ActionViewsMixin
+from .actions import GenerateTranslationJSONFileAction, VueI18NExtractAction
+from .forms import TranslationsForm, TranslationsInLineForm
+from .models import Language, TranslatableField, Translation, StaticMessageTranslation
 
 # Get an instance of a logger
 logger = logging.getLogger('django')
 translation_adminsite_name = 'translations'  # todo get from settings
-translations_admin = next((site for site in admin.sites.all_sites if site.name == translation_adminsite_name), None) or admin.sites.site
-
-
+TranslationSiteAdmin = next((site for site in admin.sites.all_sites if site.name == translation_adminsite_name), None) or admin.sites.site
 
 @admin.register(ContentType, site=TranslationSiteAdmin)
 class ContentTypeAdmin(admin.ModelAdmin):
@@ -59,6 +57,8 @@ class LanguageAdmin(admin.ModelAdmin):
 
 
 class ModelFieldIterator:
+    """ Helper For Model choice field
+    probably can be changed to collections.namedtuple"""
 
     def __init__(self, field):
         self.field = field
