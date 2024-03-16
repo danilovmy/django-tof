@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
-# @Author: MaxST
-# @Date:   2019-10-28 20:30:42
-# @Last Modified by:   MaxST
-# @Last Modified time: 2019-12-10 22:54:21
 from django.contrib import admin
-from tof.admin import TofAdmin, TranslationTabularInline
-from tof.decorators import tof_prefetch
 
 from .models import Vintage, Wine, Winery
 
+class WineInline(admin.TabularInline):
+    model = Wine
+
+class VintageInline(admin.TabularInline):
+    model = Vintage
+
 
 @admin.register(Winery)
-class WineryAdmin(TofAdmin):
+class WineryAdmin(admin.ModelAdmin):
     """Example translatable field №3
 
     This class is example where you can see Tabular inline
@@ -23,11 +22,11 @@ class WineryAdmin(TofAdmin):
     """
     list_display = ('title', 'description', 'sort')
     search_fields = ('title', )
-    inlines = (TranslationTabularInline, )
+    inlines = (WineInline, )
 
 
 @admin.register(Wine)
-class WineAdmin(TofAdmin):
+class WineAdmin(admin.ModelAdmin):
     """Example translatable field №2
 
     This class is example where translatable field save values to all added languages
@@ -40,6 +39,7 @@ class WineAdmin(TofAdmin):
     list_display = ('title', 'description', 'active', 'sort')
     search_fields = ('title', )
     only_current_lang = ('description', )
+    inlines = (VintageInline, )
 
 
 @admin.register(Vintage)
@@ -56,6 +56,5 @@ class VintageAdmin(admin.ModelAdmin):
     def wine__title(self, obj, *args, **kwargs):
         return obj.wine.title
 
-    @tof_prefetch('wine')
     def get_queryset(self, request):
         return super().get_queryset(request)
