@@ -5,7 +5,7 @@ from django.db.models import Q, QuerySet
 from django.utils.safestring import mark_safe
 from django.utils.translation.trans_real import DjangoTranslation
 
-from . import default_translator as _
+from . import _
 from .mixins import apply_mixins
 from .utils import TranslatableText
 
@@ -17,7 +17,7 @@ class TranslationQueryset(QuerySet):
         vars(instance).pop('get_from_db', None)
         to_update = [*instance.collect('updated')]
         self.bulk_update((obj for obj in to_update if obj.value), ['value'])
-        self.bulk_delete((obj.pk for obj in to_update if not obj.value))
+        self.bulk_delete(obj.pk for obj in to_update if not obj.value)
         self.bulk_create(instance.collect('created'))
 
     def bulk_delete(self, objs):
