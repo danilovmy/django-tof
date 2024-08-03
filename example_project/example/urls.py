@@ -23,6 +23,7 @@ from main.views import Index
 urlpatterns = i18n_patterns(
     path('admin/', admin.site.urls),
     path('', Index.as_view()),
+    path("i18n/", include("django.conf.urls.i18n")),
 )
 
 if settings.DEBUG:
@@ -33,3 +34,9 @@ if settings.DEBUG:
         ] + urlpatterns
 else:
     urlpatterns = i18n_patterns(path('admin/password_change/', lambda x: redirect('admin:index'))) + urlpatterns
+
+from django.views.i18n import JSONCatalog
+
+urlpatterns += i18n_patterns(
+    path("jsoni18n/", JSONCatalog.as_view(), name="javascript-catalog"),
+)

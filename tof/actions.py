@@ -1,8 +1,10 @@
 import subprocess
 from pathlib import Path
 
-from . import _, get_language
-from .management.commands.create_js_from_static_translation import Command
+from tof.management.commands.create_js_from_static_translation import Command
+
+from . import default_translator as _
+from . import get_language
 from .views import ActionView
 
 
@@ -18,7 +20,7 @@ class GenerateTranslationJSONFileAction(ActionView):
             if not current_lang_file.exists():
                 open(current_lang_file, 'a').close()
             Command().handle()
-            return super(GenerateTranslationJSONFileAction, self).processing(*args, **kwargs)
+            return super().processing(*args, **kwargs)
         return self.cancel(message=_("Can not create language files, the path {} is not exists").format(Command.locale_dir))
 
 
@@ -32,4 +34,4 @@ class VueI18NExtractAction(ActionView):
         result = subprocess.run('npm run vue-i18n-extract', shell=True, cwd='front_vue', capture_output=True)
         if result.returncode:
             return self.error(_('Error: {}').format(result.stderr.decode()))
-        return super(VueI18NExtractAction, self).processing(*args, **kwargs)
+        return super().processing(*args, **kwargs)

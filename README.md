@@ -1,11 +1,11 @@
-![GitHub issues](https://img.shields.io/github/issues/mom1/django-tof.svg)
-![GitHub stars](https://img.shields.io/github/stars/mom1/django-tof.svg)
-![GitHub Release Date](https://img.shields.io/github/release-date/mom1/django-tof.svg)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/mom1/django-tof/latest.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/mom1/django-tof.svg)
-[![GitHub license](https://img.shields.io/github/license/mom1/django-tof)](https://github.com/mom1/django-tof/blob/master/LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ef1b0b5bb51048a6a03f3cc87798f9f9)](https://www.codacy.com/manual/mom1/django-tof?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mom1/django-tof&amp;utm_campaign=Badge_Grade)
-[![codecov](https://codecov.io/gh/mom1/django-tof/branch/master/graph/badge.svg)](https://codecov.io/gh/mom1/django-tof)
+![GitHub issues](https://img.shields.io/github/issues/danilovmy/django-tof.svg)
+![GitHub stars](https://img.shields.io/github/stars/danilovmy/django-tof.svg)
+![GitHub Release Date](https://img.shields.io/github/release-date/danilovmy/django-tof.svg)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/danilovmy/django-tof/latest.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/danilovmy/django-tof.svg)
+[![GitHub license](https://img.shields.io/github/license/danilovmy/django-tof)](https://github.com/danilovmy/django-tof/blob/master/LICENSE)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ef1b0b5bb51048a6a03f3cc87798f9f9)](https://www.codacy.com/manual/danilovmy/django-tof?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=danilovmy/django-tof&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/danilovmy/django-tof/branch/master/graph/badge.svg)](https://codecov.io/gh/danilovmy/django-tof)
 
 [![PyPI](https://img.shields.io/pypi/v/django-tof.svg)](https://pypi.python.org/pypi/django-tof)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-tof.svg)]()
@@ -24,7 +24,7 @@ This project was initiated, promoted and accompanied by winePad GmbH. All develo
 _[Russian readme](README_ru.md)_
 
 ----
-The background and objectives of this projects are described [here](https://github.com/mom1/django-tof/wiki/django-tof)
+The background and objectives of this projects are described [here](https://github.com/danilovmy/django-tof/wiki/django-tof)
 
 An Application for dynamic translation of existing Django models into any number of languages.
 
@@ -59,8 +59,10 @@ You don't need special settings for this, just add this field into admin panel t
 In this case if current language is 'en', then the value saved in the model will be displayed only if the current language is 'en'.
   1. If you need to support a certain number of languages and add them at the same time, you can use `TofAdmin`.
 Using the `class CustomModelAdmin(TofAdmin)` will cause the translated fields (added to the "Translatable fields") will be able to specify a specific language.
+
 At the same time, it is possible to leave some fields in the previous form by specify them in `TofAdmin` with attribute `only_current_lang = ('description', )`. <br>
-![Widget for translatable fields](https://raw.githubusercontent.com/mom1/django-tof/master/docs/images/field_with_langs.jpeg)
+
+![Widget for translatable fields](https://raw.githubusercontent.com/danilovmy/django-tof/master/docs/images/field_with_langs.jpeg)
   1. You can also use inline translation submission forms. To do this, specify admin class (always inherited from "TofAdmin") `inlines = (TranslationTabularInline, )`
 or `inlines = (TranslationStackedInline, )`
 
@@ -102,8 +104,7 @@ DEFAULT_FILTER_LANGUAGE: _default_ "current" - Indicates in which translations s
 CHANGE_DEFAULT_MANAGER: _default_ "True" - Changing the default manager of the model. If it True, then standard manager is transferred into class attribute "objects_origin",
 and "objects" becomes the standard manager inherited from standard with adding the functionality that recognized translated fields and takes into account settings from  DEFAULT_FILTER_LANGUAGE.
 
-
 ## Requirements
 
   - Python (\>=3.9)
-  - Django (\>=3.1)
+  - Django (\>=4.0)

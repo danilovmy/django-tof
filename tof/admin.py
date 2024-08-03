@@ -1,6 +1,7 @@
 import logging
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.widgets import AutocompleteSelect
@@ -17,7 +18,7 @@ from .views import ActionViewsMixin
 
 # Get an instance of a logger
 logger = logging.getLogger('django')
-translation_adminsite_name = 'translations'  # todo get from settings
+translation_adminsite_name = getattr(settings, 'TRANSLATION_ADMINSITE', 'translation-admin')
 TranslationSiteAdmin = next((site for site in admin.sites.all_sites if site.name == translation_adminsite_name), None) or admin.sites.site
 
 @admin.register(ContentType, site=TranslationSiteAdmin)
@@ -54,8 +55,6 @@ class LanguageAdmin(admin.ModelAdmin):
 
 
 class ModelFieldIterator:
-    """ Helper For Model choice field
-    probably can be changed to collections.namedtuple"""
 
     def __init__(self, field):
         self.field = field
@@ -77,12 +76,7 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
     search_fields = ('content_type__model', 'name')
     list_display = ('content_type', 'name')
 
-    fieldsets = ((None, {
-        'fields': (
-            'content_type',
-            'name',
-        ),
-    }), )
+    fieldsets = (None, {'fields': ['content_type', 'name']}),
 
     autocomplete_fields = ('content_type',)
 
@@ -134,20 +128,8 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
 class TranslationAdmin(admin.ModelAdmin):
     form = TranslationsForm
     list_display = ('content_object', 'lang', 'field', 'value')
-    list_filter = ('content_type', )
-    fieldsets = ((None, {
-        'fields': (
-            ('field', 'lang'),
-            'object_id',
-            'value',
-        ),
-    }), (
-        'hidden',
-        {
-            'classes': ('hidden', ),
-            'fields': ('content_type', ),
-        },
-    ))
+    list_filter = 'content_type',
+    fieldsets = (None, {'fields': (('field','lang'), 'object_id', 'value')}), ('hidden', {'classes': ['hidden'], 'fields': ['content_type']})
     autocomplete_fields = ('field', 'lang')
     url_name = '%s:%s_%s_autocomplete'
 

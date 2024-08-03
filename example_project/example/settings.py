@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'modeltranslation',
     'main',
     'tof',
 ]
@@ -51,9 +52,9 @@ MIDDLEWARE = [
 ]
 
 if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
+    # INSTALLED_APPS += ['debug_toolbar']
     INTERNAL_IPS = ['127.0.0.1']
-    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    # MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
 ROOT_URLCONF = 'example.urls'
 
 TEMPLATES = [
@@ -119,3 +120,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
+from django.utils.translation import gettext_lazy as _
+LANGUAGES = [
+    ('en', _('English')),
+    ('sk', _('Russian')),
+]

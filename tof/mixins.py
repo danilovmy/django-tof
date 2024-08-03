@@ -92,6 +92,14 @@ class TranslationFieldModelFormMixin(ClassPatcherMixin):
             if hasattr(getattr(type(self.instance)._meta.concrete_model, name, None), 'replaced_field'):
                 self.fields[name] = TranslatableFieldFormField((field,), required=False, initial=getattr(self.instance, name), label=field.label, help_text=field.help_text, label_suffix=field.label_suffix)
 
+    def get_initial_for_field(self, field, field_name):
+        initial = super().get_initial_for_field(field, field_name)
+        if isinstance(field, TranslatableFieldFormField):
+            initials = ((name.rpartition('_'), value) for name, value in (self.initial or {}).items() if name.startswith(f'{field_name}_'))
+            for (name, splitter, lang), value in initials:
+                if value and name == field_name:
+                    initial[lang] = value
+        return initial
 
 class TranslationFieldMixin(ClassPatcherMixin):
 

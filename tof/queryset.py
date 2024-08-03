@@ -1,5 +1,5 @@
 # This  classes sind Prototypes To add normal Translatable functionality to every Queryset function
-# I want change SQL compiler method and change queryset on the end of queryset methods chain
+# I want change SQL compiler method and change queryset on the end of querset methods chain
 
 
 class CompilerMixIn:
@@ -15,7 +15,7 @@ class QueryMixIn:
 
     def get_compiler(self, *args, **kwargs):
         compiler = super().get_compiler(*args, **kwargs)
-        if not issubcalss(compiler, 'CompilerMixIn'):
+        if not issubclass(compiler, 'CompilerMixIn'):
             compiler.__class__.__bases__ = (CompilerMixIn, *compiler.__class__.__bases__)
         return compiler
 

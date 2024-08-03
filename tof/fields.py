@@ -14,7 +14,6 @@ class TranslatableFieldFormField(MultiValueField):
         kwargs['widget'] = self.widget([field.widget for field in fields])
         kwargs['require_all_fields'] = any(field.required for field in fields)
         super().__init__(fields, *args, **kwargs)
-        self.initial = self.initial or TranslatableText()
 
     def compress(self, data_list):
         if not data_list and self.require_all_fields:

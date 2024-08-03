@@ -5,7 +5,8 @@ from django.db.models import Q, QuerySet
 from django.utils.safestring import mark_safe
 from django.utils.translation.trans_real import DjangoTranslation
 
-from . import _
+from . import activate_lang, get_language
+from . import default_translator as _
 from .mixins import apply_mixins
 from .utils import TranslatableText
 
@@ -17,7 +18,7 @@ class TranslationQueryset(QuerySet):
         vars(instance).pop('get_from_db', None)
         to_update = [*instance.collect('updated')]
         self.bulk_update((obj for obj in to_update if obj.value), ['value'])
-        self.bulk_delete(obj.pk for obj in to_update if not obj.value)
+        self.bulk_delete((obj.pk for obj in to_update if not obj.value))
         self.bulk_create(instance.collect('created'))
 
     def bulk_delete(self, objs):
@@ -25,7 +26,6 @@ class TranslationQueryset(QuerySet):
 
 
 class Translation(models.Model):
-    """ First important model to understand what happens here. """
 
     class Meta:
         verbose_name = _('Translation')
@@ -36,7 +36,7 @@ class Translation(models.Model):
     object_id = models.PositiveIntegerField(help_text=_('First set the field'))
     content_object = GenericForeignKey()
 
-    field = models.ForeignKey('TranslatableField', related_name='translations', on_delete=models.SET_NULL, null=True, blank=True)
+    field = models.ForeignKey('TranslatableField', related_name='translations', on_delete=models.CASCADE)
     lang = models.ForeignKey('Language', related_name='translations', to_field='iso', limit_choices_to=Q(is_active=True), on_delete=models.DO_NOTHING)
     value = models.TextField(_('Value'), help_text=_('Value field'))
 
@@ -201,7 +201,7 @@ class StaticMessageTranslation(models.Model):
     objects = QuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.translation or self.message or str()}'
+        return f'{self.translation or self.message or ""}'
 
     def languages(self):
         iterator = getattr(self.translation, 'iter', ())
@@ -214,13 +214,18 @@ class StaticMessageTranslation(models.Model):
         if message not in cls.CACHE:
             try:
                 messages = cls.objects.filter(message=message)[:2]
-                cls.CACHE[message] = messages[0] if len(messages) else cls.objects.create(message=message)
-                if len(messages) > 1:
-                    cls.objects.exclude(pk=cls.CACHE[message].pk).filter(message=message).delete()
+                if len(messages):
+                    cls.CACHE[message], *messages = messages
+                    if messages:
+                        cls.objects.exclude(pk=cls.CACHE[message].pk).filter(message=message).delete()
+                else:
+                    cls.CACHE[message] = cls.objects.create(message=message)
             except Exception as error:
                 print(message, repr(error), error, getattr(error, 'args', None), error.__context__, error.__cause__,)
                 return str(message)
         cached = cls.CACHE[message]
+        if not isinstance(cached.translation, TranslatableText):
+            cached.translation = TranslatableText()
         if not cached.translation.current:
             translation = cls.base_translator_cls(translator, message)
             if translation not in vars(cached.translation).values():

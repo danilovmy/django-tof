@@ -10,7 +10,7 @@ from . import get_language
 def resolve_admin_link(app_label, model, action):
     for site in all_sites:
         try:
-            return reverse('admin:{}_{}_{}'.format(app_label, model, action), current_app=site.name)
+            return reverse(f'admin:{app_label}_{model}_{action}', current_app=site.name)
         except NoReverseMatch:
             pass
 
