@@ -126,5 +126,6 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 from django.utils.translation import gettext_lazy as _
 LANGUAGES = [
     ('en', _('English')),
-    ('sk', _('Russian')),
+    ('sk', _('Slovenčina')),
+    ('ru', _('Русский')),
 ]

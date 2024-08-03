@@ -13,10 +13,9 @@
 
 # django-tof
 Django models translation on fly 🛸️
-THIS FORK IS THE NEXT VERSION OF DJANGO_TOF
+THIS FORK IS THE NEXT VERSION OF DJANGO_TOF V 1.0
 ----
-This project was initiated, promoted and accompanied by winePad GmbH. All development based on ideas, experience and financing by winePad GmbH (winePad.at).
-
+This project was initiated, promoted and accompanied by winePad GmbH (winePad.at). All development based on ideas, experience and support from Maxim Danilov (winePad GmbH).
 ----
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/i0QJJJEMKSU/0.jpg)](https://www.youtube.com/watch?v=i0QJJJEMKSU)
@@ -32,7 +31,7 @@ An Application for dynamic translation of existing Django models into any number
   - without need to reboot servers
   - without changing the use of translated fields
   - ready to work after install and indicated in INSTALLED_APPS
-  - fully integrated in Django admin
+  - fully integrated in Django modelAdmin, and ModelInline
 
 ## Installation
 
