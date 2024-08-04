@@ -1,6 +1,6 @@
 import sys
 
-from django.apps import AppConfig
+from django.apps import AppConfig, apps
 from django.db import connection
 from django.db.models.signals import post_migrate
 
@@ -12,12 +12,12 @@ class TofConfig(AppConfig):
 
     def ready(self):
         if {'test', 'migrate', 'makemigrations'}.intersection(set(sys.argv)):
-            post_migrate.connect(self.patch, sender=self)
-        elif 'tof_translatablefield' in connection.introspection.table_names():
-            self.patch()
+            return post_migrate.connect(self.release, sender=self)
+        return apps.ready_event._cond._waiters.append(self)
 
-    def patch(self, *args, **kwargs):
+    def release(self, *args, **kwargs):
         if not self.__patched:
-            self.models['translatablefield'].objects.patch_fields()
-            self.models['staticmessagetranslation'].patch_djangotranslation()
-            self.__patched = True
+            if 'tof_translatablefield' in connection.introspection.table_names():
+                self.models['translatablefield'].objects.patch_fields()
+                self.models['staticmessagetranslation'].patch_djangotranslation()
+                self.__patched = True
