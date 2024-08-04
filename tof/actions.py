@@ -3,8 +3,7 @@ from pathlib import Path
 
 from tof.management.commands.create_js_from_static_translation import Command
 
-from . import default_translator as _
-from . import get_language
+from . import _, get_language
 from .views import ActionView
 
 
