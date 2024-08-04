@@ -1,4 +1,5 @@
 from django.contrib.admin.sites import all_sites
+from django.contrib.admin.options import ModelAdmin
 from django.db.models import Q
 from django.templatetags.i18n import GetAvailableLanguagesNode, settings
 from django.utils.module_loading import import_string
@@ -10,6 +11,8 @@ from .fields import TranslatableFieldFormField
 class tofQ(Q):
     patch = True
 
+class TofModelAdmin(ModelAdmin):
+    pass
 
 class ClassPatcherMixin:
 
@@ -135,9 +138,19 @@ class TofAdminMixin(InstancePatcherMixin):
         for model_admin in cls.get_admins(model):
             getattr(cls, f'{patch}_bases')(model_admin, fields)
 
+
+    @classmethod
+    def get_admins(cls, model):
+        yield from (cls.check_modeladmin(site, model) for site in all_sites if site.is_registered(model))
+
     @staticmethod
-    def get_admins(model):
-        yield from (site._registry[model] for site in all_sites if site.is_registered(model))
+    def check_modeladmin(site, model):
+        """If model was registered with builtin ModelAdmin class we replace it with our TofModelAdmin.
+        Otherwise patch brake MRO for already patched admins."""
+        if type(site._registry[model]) is ModelAdmin:
+            site._registry[model] = TofModelAdmin(model, site)
+        return site._registry[model]
+
 
 
 class TofInlineMixin(ClassPatcherMixin):
