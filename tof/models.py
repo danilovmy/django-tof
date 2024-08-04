@@ -5,7 +5,7 @@ from django.db.models import Q, QuerySet
 from django.utils.safestring import mark_safe
 from django.utils.translation.trans_real import DjangoTranslation
 
-from . import default_translator as _
+from . import _
 from .mixins import apply_mixins
 from .utils import TranslatableText
 
