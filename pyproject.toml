@@ -43,11 +43,11 @@ wiki = "https://github.com/danilovmy/django-tof/wiki_django_tof.md"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-include-package-data = true
-
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["static/*", "templates/*", "fixtures/*"]
 
 [tool.ruff]
 line-length = 320
