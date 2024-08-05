@@ -1,12 +1,11 @@
-[tool.poetry]
+[project]
 name = "django-tof"
 version = "2.1.0"
 description = "Translate fields of django models without having to restart the server,  without changing the model code."
-authors = ["Danilov Maxim <maxim@wpshop.at>"]
-maintainers = ["Danilov Maxim <maxim@wpshop.at>"]
-license = "MIT"
-repository = "https://github.com/danilovmy/django-tof"
-homepage = "https://django-tof.readthedocs.io/"
+authors = [{name="Danilov Maxim", email="maxim@wpshop.at"}]
+maintainers = [{name="Danilov Maxim", email="maxim@wpshop.at"}]
+license = {text = "MIT License"}
+
 keywords = ["translations", "translate", "django", "model", "translation-management"]
 readme = "README.md"
 
@@ -23,19 +22,22 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic"
 ]
 
-packages = [
-    { include = "tof", from = "src", to="tof"},
-    { include = "fixtures", from = "src/fixtures/*.*", to="tof/fixtures"},
-    { include = "static", from = "src/static/**/*.*", to="tof/static"},
-    { include = "templates", from = "src/templates/**/*.*", to="tof/templates"}
+requires-python = ">= 3.9"
+
+dependencies = [
+    "django>=4.0"
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.9"
-django = ">=3.1"
+[project.optional-dependencies]
+dev = [
+    "ruff"
+]
 
-[tool.poetry.dev-dependencies]
-ruff="*"
+[project.urls]
+repository = "https://github.com/danilovmy/django-tof"
+homepage = "https://github.com/danilovmy/django-tof"
+documentation = "https://django-tof.readthedocs.io/"
+wiki = "https://github.com/danilovmy/django-tof/wiki_django_tof.md"
 
 [tool.ruff]
 line-length = 320
