@@ -39,6 +39,16 @@ homepage = "https://github.com/danilovmy/django-tof"
 documentation = "https://django-tof.readthedocs.io/"
 wiki = "https://github.com/danilovmy/django-tof/wiki_django_tof.md"
 
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 line-length = 320
 target-version = "py39"
