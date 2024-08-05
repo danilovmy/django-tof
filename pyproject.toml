@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 packages = [
-    { include = "tof", from = "src"}
+    { include = "tof", from = "src/**/*.*"}
 ]
 
 [tool.poetry.dependencies]
