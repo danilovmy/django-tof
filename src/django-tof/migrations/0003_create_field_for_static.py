@@ -8,9 +8,8 @@ def register_translated_field_in_static_translations(apps, schema_editor):
     TranslatableFieldManager = apps.get_model('tof', 'TranslatableField').objects
     __, created = TranslatableFieldManager.get_or_create(content_type=ContentType, name='translation')
     if created:
-        print('successful added translated field for StaticMessageTranslation model')
-    else:
-        print('translated field for StaticMessageTranslation already exists')
+        return print('successful added translated field for StaticMessageTranslation model')
+    print('translated field for StaticMessageTranslation already exists')
 
 
 def unregister_translated_field_in_static_translations(apps, schema_editor):
@@ -19,9 +18,8 @@ def unregister_translated_field_in_static_translations(apps, schema_editor):
     TranslatableFieldManager = apps.get_model('tof', 'TranslatableField').objects
     deleted = TranslatableFieldManager.filter(content_type=ContentType, name='translation').delete()
     if deleted:
-        print('successful removed translated field from StaticMessageTranslation model')
-    else:
-        print('translated field for StaticMessageTranslation model not found')
+        return print('successful removed translated field from StaticMessageTranslation model')
+    print('translated field for StaticMessageTranslation model not found')
 
 
 class Migration(migrations.Migration):
