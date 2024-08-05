@@ -3,7 +3,7 @@ name = "django-tof"
 version = "2.1.0"
 description = "Translate fields of django models without having to restart the server,  without changing the model code."
 authors = ["Danilov Maxim <maxim@wpshop.at>"]
-maintainers = [{name = "Maxim Danilov", email = "maxim@wpshop.at"}]
+maintainers = ["Danilov Maxim <maxim@wpshop.at>"]
 license = "MIT"
 repository = "https://github.com/danilovmy/django-tof"
 homepage = "https://django-tof.readthedocs.io/"
