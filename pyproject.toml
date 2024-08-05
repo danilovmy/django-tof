@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 packages = [
-    { include = "tof", from = "src/**/*.*"}
+    { include = "django-tof", from = "src/**/*.*", to="tof"}
 ]
 
 [tool.poetry.dependencies]
