@@ -23,18 +23,12 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic"
 ]
 
-packages = [{ include = "." }]
-
 [tool.poetry.dependencies]
 python = ">=3.9"
 django = ">=3.1"
 
 [tool.poetry.dev-dependencies]
 ruff="*"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 320
