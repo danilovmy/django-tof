@@ -1,0 +1,11 @@
+[tool.poetry]
+name = "example_project"
+version = "1.0.0"
+description = ""
+authors = ["Danilov Maxim <maxim@wpshop.at>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+django = "^4.0"
+django-tof = {path = "../src", develop = true}
+

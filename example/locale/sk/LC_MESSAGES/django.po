@@ -1,0 +1,172 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-03-17 02:20+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n "
+">= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
+#: .\main\models.py:7
+msgid "Winery"
+msgstr ""
+
+#: .\main\models.py:8
+msgid "Winery-plural"
+msgstr ""
+
+#: .\main\models.py:11 .\main\models.py:22
+msgid "Title"
+msgstr ""
+
+#: .\main\models.py:12 .\main\models.py:23 .\main\models.py:35
+msgid "Description"
+msgstr ""
+
+#: .\main\models.py:13 .\main\models.py:25
+msgid "Sort"
+msgstr ""
+
+#: .\main\models.py:18
+msgid "wine"
+msgstr ""
+
+#: .\main\models.py:19
+msgid "wine-plural"
+msgstr ""
+
+#: .\main\models.py:24 .\tof\models.py:173
+msgid "Active"
+msgstr ""
+
+#: .\main\models.py:28
+msgid "Temperature_from"
+msgstr ""
+
+#: .\main\models.py:28 .\main\models.py:29
+msgid "in ° C"
+msgstr ""
+
+#: .\main\models.py:29
+msgid "Temperature_to"
+msgstr ""
+
+#: .\main\models.py:34
+msgid "Year"
+msgstr ""
+
+#: .\tof\actions.py:10 .\tof\actions.py:11
+msgid "Generate translation JSON file for front"
+msgstr ""
+
+#: .\tof\actions.py:13 .\tof\actions.py:29
+msgid "Success"
+msgstr ""
+
+#: .\tof\actions.py:22
+msgid "Can not create language files, the path {} is not exists"
+msgstr ""
+
+#: .\tof\actions.py:26 .\tof\actions.py:27
+msgid "Extract translation from front"
+msgstr ""
+
+#: .\tof\actions.py:34
+msgid "Error: {}"
+msgstr ""
+
+#: .\tof\models.py:31 .\tof\models.py:32 .\tof\models.py:135
+#: .\tof\models.py:199
+msgid "Translation"
+msgstr ""
+
+#: .\tof\models.py:36
+msgid "First set the field"
+msgstr ""
+
+#: .\tof\models.py:41
+msgid "Value"
+msgstr ""
+
+#: .\tof\models.py:41
+msgid "Value field"
+msgstr ""
+
+#: .\tof\models.py:72
+msgid "Translatable field"
+msgstr ""
+
+#: .\tof\models.py:73
+msgid "Translatable fields"
+msgstr ""
+
+#: .\tof\models.py:77
+msgid "Field name"
+msgstr ""
+
+#: .\tof\models.py:77
+msgid "Name field"
+msgstr ""
+
+#: .\tof\models.py:168
+msgid "Language"
+msgstr ""
+
+#: .\tof\models.py:169
+msgid "Languages"
+msgstr ""
+
+#: .\tof\models.py:194
+msgid "Static translation"
+msgstr ""
+
+#: .\tof\models.py:195
+msgid "Static translations"
+msgstr ""
+
+#: .\tof\models.py:198
+msgid "Message"
+msgstr ""
+
+#: .\tof\templates\tof\multiwidget.html:11
+msgid "Add another Language"
+msgstr ""
+
+#: .\tof\templates\tof\multiwidget.html:12
+msgid "Add"
+msgstr ""
+
+#: .\tof\views.py:21
+msgid "Yes, I'm sure"
+msgstr ""
+
+#: .\tof\views.py:22
+msgid "No, I'm not sure"
+msgstr ""
+
+#: .\tof\views.py:90
+msgid "Action was cancelled"
+msgstr ""
+
+#: .\tof\views.py:92
+msgid "{} was change"
+msgstr ""
+
+#: .\tof\views.py:99
+msgid "You don't have enough permissions"
+msgstr ""
+
+#: .\tof\views.py:249
+msgid "Are you sure?"
+msgstr ""

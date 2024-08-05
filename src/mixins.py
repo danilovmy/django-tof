@@ -1,5 +1,5 @@
-from django.contrib.admin.sites import all_sites
 from django.contrib.admin.options import ModelAdmin
+from django.contrib.admin.sites import all_sites
 from django.db.models import Q
 from django.templatetags.i18n import GetAvailableLanguagesNode, settings
 from django.utils.module_loading import import_string
@@ -145,8 +145,7 @@ class TofAdminMixin(InstancePatcherMixin):
 
     @staticmethod
     def check_modeladmin(site, model):
-        """If model was registered with builtin ModelAdmin class we replace it with our TofModelAdmin.
-        Otherwise patch brake MRO for already patched admins."""
+        """If model was registered with builtin ModelAdmin class we replace it with our TofModelAdmin. Otherwise patch brake MRO for already patched admins."""
         if type(site._registry[model]) is ModelAdmin:
             site._registry[model] = TofModelAdmin(model, site)
         return site._registry[model]
@@ -157,7 +156,7 @@ class TofInlineMixin(ClassPatcherMixin):
     _inlines_cache = {}
 
     def get_formset(self, request, obj=None, **kwargs):
-        formset = super(TofInlineMixin, self).get_formset(request, obj=obj, **kwargs)
+        formset = super().get_formset(request, obj=obj, **kwargs)
         TranslationFieldModelFormMixin.patch_bases(formset.form)
         return formset
 

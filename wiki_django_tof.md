@@ -1,6 +1,6 @@
 ## Goal
 
-Create a freeware library to run translation of fields without need to 
+Create a freeware library to run translation of fields without need to
 restart the server, without changing model code, storing the translations
 in database and ability to search all translations, current language or by
 translations of a specify language.
@@ -9,18 +9,18 @@ translations of a specify language.
 
 Existing solutions for their approach are divided into those who
 store the translation in a separate column of the main table
-and on those who store the translation in separate tables for 
+and on those who store the translation in separate tables for
 each model. These approaches overlap the restriction is that
-if you want to start to translate a new field or model you are making 
-changes in the structure of the database and in consequence 
-of what is necessary server restart. In parallel with this, 
+if you want to start to translate a new field or model you are making
+changes in the structure of the database and in consequence
+of what is necessary server restart. In parallel with this,
 the majority of decisions to make make changes to the model
 code making it more difficult to understand.
 
 ### Solution
 
 To solve the problems it is proposed to develop a Django application that
-would allow to store in one table a reference to a field in the model, and in 
+would allow to store in one table a reference to a field in the model, and in
 another - translations in a shared table with a static structure would not change
 the standard scenario of using ORM fields and would not require
 server restart.
@@ -70,7 +70,7 @@ book.title  # => Title en
 In the first approximation of the interfaces you will need a widget for translatable
 fields.
 
-![Widget for translatable fields](https://github.com/mom1/django-tof/blob/master/docs/images/widget.png)
+![Widget for translatable fields](https://github.com/danilovmy/django-tof/blob/master/docs/images/widget.png)
 
 Where the tab with an active language are marked with a blue colour.
 

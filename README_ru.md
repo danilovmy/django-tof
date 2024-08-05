@@ -1,11 +1,11 @@
-![GitHub issues](https://img.shields.io/github/issues/mom1/django-tof.svg)
-![GitHub stars](https://img.shields.io/github/stars/mom1/django-tof.svg)
-![GitHub Release Date](https://img.shields.io/github/release-date/mom1/django-tof.svg)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/mom1/django-tof/latest.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/mom1/django-tof.svg)
-[![GitHub license](https://img.shields.io/github/license/mom1/django-tof)](https://github.com/mom1/django-tof/blob/master/LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ef1b0b5bb51048a6a03f3cc87798f9f9)](https://www.codacy.com/manual/mom1/django-tof?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mom1/django-tof&amp;utm_campaign=Badge_Grade)
-[![codecov](https://codecov.io/gh/mom1/django-tof/branch/master/graph/badge.svg)](https://codecov.io/gh/mom1/django-tof)
+![GitHub issues](https://img.shields.io/github/issues/danilovmy/django-tof.svg)
+![GitHub stars](https://img.shields.io/github/stars/danilovmy/django-tof.svg)
+![GitHub Release Date](https://img.shields.io/github/release-date/danilovmy/django-tof.svg)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/danilovmy/django-tof/latest.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/danilovmy/django-tof.svg)
+[![GitHub license](https://img.shields.io/github/license/danilovmy/django-tof)](https://github.com/danilovmy/django-tof/blob/master/LICENSE)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ef1b0b5bb51048a6a03f3cc87798f9f9)](https://www.codacy.com/manual/danilovmy/django-tof?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=danilovmy/django-tof&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/danilovmy/django-tof/branch/master/graph/badge.svg)](https://codecov.io/gh/danilovmy/django-tof)
 
 [![PyPI](https://img.shields.io/pypi/v/django-tof.svg)](https://pypi.python.org/pypi/django-tof)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-tof.svg)]()
@@ -15,14 +15,13 @@
 Django models translation on fly 🛸️
 
 ----
-Этот проект был инициирован, продвигался и сопровождался winePad GmbH. Разработка полностью основана на идеях, опыте и финансировании winePad GmbH (winePad.at).
-
+Этот проект был инициирован, продвигался и сопровождался winePad GmbH (winePad.at). Разработка полностью основана на идеях, опыте и поддержике Максима Данилова из winePad GmbH.
 ----
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/i0QJJJEMKSU/0.jpg)](https://www.youtube.com/watch?v=i0QJJJEMKSU)
 
 ----
-Предпосылки и цели этого проекта описаны [тут](https://github.com/mom1/django-tof/wiki/django-tof)
+Предпосылки и цели этого проекта описаны [тут](https://github.com/danilovmy/django-tof/wiki/django-tof)
 
 Приложение для перевода динамического содержимого существующих моделей Django на произвольное количество языков
 
@@ -34,7 +33,7 @@ Django models translation on fly 🛸️
 
 ## Установка
 
-`pip install django-tof`
+`pip install git+https://github.com/danilovmy/django-tof.git` #egg=tof&subdirectory=src"
 
 `python manage.py migrate tof`
 
@@ -47,8 +46,9 @@ INSTALLED_APPS = [
 ...
 ]
 ~~~
-Не забудьте сделать при необходимости `python manage.py collectstatic`
+Не забудьте сделать при необходимости
 
+`python manage.py collectstatic`
 ## Использование
 
   1. В самом простом варианте использования django-tof позволяет хранить перевод на текущий язык.
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
   1. Если нужно поддерживать некоторое количество языков и вносить их одновременно то для удобства можно воспользоваться `TofAdmin`.
 Использование `class CustomModelAdmin(TofAdmin)` приведет к тому что переводимые поля (добавленные в "Translatable fields") будут иметь возможность
 указать конкретный язык. При этом есть возможность некоторые поля оставить в предыдущем виде указав их в `TofAdmin` атрибут `only_current_lang = ('description', )`.<br>
-![Widget for translatable fields](https://raw.githubusercontent.com/mom1/django-tof/master/docs/images/field_with_langs.jpeg)
+![Widget for translatable fields](https://raw.githubusercontent.com/danilovmy/django-tof/master/docs/images/field_with_langs.jpeg)
   1. Также можно использовать инлайн формы представления переводов. Для этого в админ классе (обязательно унаследованного от "TofAdmin") указать
 `inlines = (TranslationTabularInline, )` или `inlines = (TranslationStackedInline, )`
 В этом случае для избежания двоякости значений переводимое поле будет скрыто классом "TofAdmin" автоматически.
@@ -101,8 +101,8 @@ CHANGE_DEFAULT_MANAGER: _по умолчанию_ "True" - Изменять ли
 
 ## Требования
 
-  - Python (\>=3.6)
-  - Django (\>=2.2)
+  - Python (\>=3.9)
+  - Django (\>=4.0)
 
 ## Как начать разработку
 
@@ -110,7 +110,7 @@ CHANGE_DEFAULT_MANAGER: _по умолчанию_ "True" - Изменять ли
   2. Склонировать репозиторий
   3. Создать свою ветку
   4. **Перейти в директорию `example_project`**
-  5. Вы можете использовать [pyenv](https://github.com/pyenv/pyenv) для выбора версии python `pyenv local 3.8.0`
+  5. Вы можете использовать [pyenv](https://github.com/pyenv/pyenv) для выбора версии python `pyenv local 3.9.0`
   6. Мы используем [poetry](https://poetry.eustace.io/docs/#installation)
   7. Запустить: `poetry env use python` для использования вашей версии python.
   8. Запустить: `poetry install` для установки всех зависимостей.
