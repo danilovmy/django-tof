@@ -47,7 +47,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["static/*", "templates/*", "fixtures/*"]
+"*" = ["static/tof/**", "templates/tof/*", "fixtures/*"]
 
 [tool.ruff]
 line-length = 320
