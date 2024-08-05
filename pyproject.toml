@@ -24,9 +24,9 @@ classifiers = [
 ]
 
 packages = [
-    { include = "tof", from = "src", to="tof"}
-    { include = "fixtures", from = "src/fixtures/*.*", to="tof/fixtures"}
-    { include = "static", from = "src/static/**/*.*", to="tof/static"}
+    { include = "tof", from = "src", to="tof"},
+    { include = "fixtures", from = "src/fixtures/*.*", to="tof/fixtures"},
+    { include = "static", from = "src/static/**/*.*", to="tof/static"},
     { include = "templates", from = "src/templates/**/*.*", to="tof/templates"}
 ]
 
