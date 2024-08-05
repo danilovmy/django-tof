@@ -35,7 +35,7 @@ An Application for dynamic translation of existing Django models into any number
 
 ## Installation
 
-`pip install git+https://github.com/danilovmy/django-tof.git` #egg=tof\&subdirectory=src"
+`pip install git+https://github.com/danilovmy/django-tof.git`
 `python manage.py migrate tof`
 
 ~~~python
