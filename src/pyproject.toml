@@ -3,6 +3,7 @@ name = "django-tof"
 version = "2.1.0"
 description = "Translate fields of django models without having to restart the server,  without changing the model code."
 authors = ["Danilov Maxim <maxim@wpshop.at>"]
+maintainers = [{name = "Maxim Danilov", email = "maxim@wpshop.at"}]
 license = "MIT"
 repository = "https://github.com/danilovmy/django-tof"
 homepage = "https://django-tof.readthedocs.io/"
@@ -12,18 +13,17 @@ readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
-    "Framework :: Django >=3.0",
+    "Framework :: Django >=4.0",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: >=3.7",
+    "Programming Language :: Python :: >=3.9",
     "Topic :: Database",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
     "Topic :: Text Processing :: Linguistic"
 ]
 
-exclude = ["tof/tests"]
-packages = [{ include = "tof" }]
+packages = [{ include = "." }]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
@@ -49,4 +49,3 @@ avoid-escape = true
 
 [tool.ruff.format]
 quote-style = "single"
-
