@@ -1,4 +1,4 @@
-include README.md README_ru.md AUTHORS LICENSE pyproject.toml
+include README.md README_ru.md AUTHORS LICENSE pyproject.toml requirements.txt
 recursive-include src/tof *.py *.html *.js *.css *.json.gz
 recursive-include tests *.py *.json
 prune src/core
