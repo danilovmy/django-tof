@@ -1,0 +1,182 @@
+[
+  {
+    "model": "tof.translatablefield",
+    "pk": 910001,
+    "fields": {
+      "name": "title",
+      "content_type": [
+        "tests",
+        "queryitem"
+      ]
+    }
+  },
+  {
+    "model": "tof.translatablefield",
+    "pk": 910002,
+    "fields": {
+      "name": "description",
+      "content_type": [
+        "tests",
+        "queryitem"
+      ]
+    }
+  },
+  {
+    "model": "tests.queryitem",
+    "pk": 1,
+    "fields": {
+      "title": "Origin A",
+      "description": "Source A",
+      "number": 1
+    }
+  },
+  {
+    "model": "tests.queryitem",
+    "pk": 2,
+    "fields": {
+      "title": "Origin B",
+      "description": "Source B",
+      "number": 2
+    }
+  },
+  {
+    "model": "tests.queryitem",
+    "pk": 3,
+    "fields": {
+      "title": null,
+      "description": "Source C",
+      "number": 3
+    }
+  },
+  {
+    "model": "tests.queryitem",
+    "pk": 4,
+    "fields": {
+      "title": "Only origin",
+      "description": "",
+      "number": 4
+    }
+  },
+  {
+    "model": "tests.querylink",
+    "pk": 1,
+    "fields": {
+      "item": 1,
+      "label": "one"
+    }
+  },
+  {
+    "model": "tests.querylink",
+    "pk": 2,
+    "fields": {
+      "item": 2,
+      "label": "two"
+    }
+  },
+  {
+    "model": "tests.querylink",
+    "pk": 3,
+    "fields": {
+      "item": 3,
+      "label": "three"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 1,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 1,
+      "field": 910001,
+      "lang": "de",
+      "value": "Zulu"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 2,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 1,
+      "field": 910001,
+      "lang": "en",
+      "value": "Alpha"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 3,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 1,
+      "field": 910001,
+      "lang": "fr",
+      "value": "Autre"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 4,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 1,
+      "field": 910002,
+      "lang": "de",
+      "value": "Beschreibung"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 5,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 2,
+      "field": 910001,
+      "lang": "de",
+      "value": "Beta"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 6,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 2,
+      "field": 910001,
+      "lang": "fr",
+      "value": "Autre"
+    }
+  },
+  {
+    "model": "tof.translation",
+    "pk": 7,
+    "fields": {
+      "content_type": [
+        "tests",
+        "queryitem"
+      ],
+      "object_id": 3,
+      "field": 910001,
+      "lang": "de",
+      "value": "Gamma"
+    }
+  }
+]

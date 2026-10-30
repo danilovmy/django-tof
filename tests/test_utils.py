@@ -1,13 +1,14 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from django.utils import translation
 from django.utils.crypto import get_random_string
 
-from ..utils import TranslatableText
+from tof.utils import TranslatableText
 
 
 class TestTranslatableTextIntegration(SimpleTestCase):
 
     def setUp(self):
+        self.addCleanup(translation.activate, translation.get_language())
         self.test_obj = TranslatableText()
         self.random_english = get_random_string(20)
 
@@ -151,6 +152,7 @@ class TestTranslatableTextIntegration(SimpleTestCase):
 class TestTranslatableText(SimpleTestCase):
 
     def setUp(self):
+        self.addCleanup(translation.activate, translation.get_language())
         self.test_obj = TranslatableText()
 
     def test___setattr__(self):
@@ -204,37 +206,6 @@ class TestTranslatableText(SimpleTestCase):
         self.test_obj.__delattr__(random_str)
         self.assertNotIn(random_str, vars(self.test_obj), msg='attr should be deleted')
 
-    def test___delitem__(self):
-        # class TestSubClass(type(self.test_obj)):
-
-        #     def __delattr__(self, attr, value):
-        #         vars(self)[attr] = value
-        self.fail('please write test')
-
-    def test___getitem__(self):
-        self.fail('please write test')
-
-    def test___str__(self):
-        self.fail('please write test')
-
-    def test___repr__(self):
-        self.fail('please write test')
-
-    def test___eq__(self):
-        self.fail('please write test')
-
-    def test___add__(self):
-        self.fail('please write test')
-
-    def test___radd__(self):
-        self.fail('please write test')
-
-    def test___len__(self):
-        self.fail('please write test')
-
-    def test___bool__(self):
-        self.fail('please write test')
-
     def test_update(self):
 
         class TestClass(type(self.test_obj)):
@@ -253,12 +224,8 @@ class TestTranslatableText(SimpleTestCase):
 
         self.assertEqual(test_obj.update(kwarg='some_kwarg'), test_obj, msg='should return self')
 
-    def test___iter__(self):
-        self.fail('please write test')
-
     def test_iter(self):
-        random_lang = get_random_string(2)
-        translation.activate(random_lang)
+        translation.activate('nl')
         random_german = get_random_string(20)
         random_english = get_random_string(20)
 
@@ -278,17 +245,27 @@ class TestTranslatableText(SimpleTestCase):
         self.test_obj.ru = random_russian
         expected_output = [('ru', random_russian), ('de', random_german), ('en', random_english)]
         output = [m for m in self.test_obj.iter]
-        print(output)
         self.assertEqual(output, expected_output, msg='should match the expected output')
 
-    # @property
-    # def iter(self):
-    #     langs = dict.fromkeys((self.get_lang(), self.DEFAULT, *(lang for lang in vars(self).keys() if len(lang) == 2)), )
-    #     yield from ((lang, value) for lang, value in ((lang, getattr(self, lang, None)) for lang in langs) if value)
+    def test_mapping_and_string_protocols(self):
+        with translation.override('de'):
+            value = TranslatableText().update(_origin='Origin', de='Hallo', en='Hello')
+            self.assertEqual(value[1:4], 'all')
+            self.assertEqual(list(value), list('Hallo'))
+            del value['de']
+            self.assertIsNone(value['de'])
+            self.assertEqual(str(value), 'Hello')
+            del value['en']
+            self.assertEqual(str(value), 'Origin')
+            del value['_origin']
+            self.assertFalse(value)
+            self.assertEqual(len(value), 0)
 
-
-    def test_current(self):
-        self.fail('please write test')
-
-    def test_get_lang(self):
-        self.fail('please write test')
+    def test_default_language_is_lazy_and_can_be_overridden_per_value(self):
+        with override_settings(DEFAULT_LANGUAGE='fr'), translation.override('it'):
+            value = TranslatableText().update(en='English', fr='French')
+            self.assertEqual(TranslatableText.DEFAULT, 'fr')
+            self.assertEqual(str(value), 'French')
+            self.assertNotIn('DEFAULT', vars(value))
+            value.DEFAULT = 'en'
+            self.assertEqual(str(value), 'English')

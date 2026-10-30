@@ -53,17 +53,15 @@ Don't forget to do if it necessary:
 
 ## How to use
 
-  1. In the simplest use case django-tof allows you to store translation into the current language.
-You don't need special settings for this, just add this field into admin panel to the "Translatable fields" model.
-In this case if current language is 'en', then the value saved in the model will be displayed only if the current language is 'en'.
-  1. If you need to support a certain number of languages and add them at the same time, you can use `TofAdmin`.
-Using the `class CustomModelAdmin(TofAdmin)` will cause the translated fields (added to the "Translatable fields") will be able to specify a specific language.
+Add an existing text field to TOF's "Translatable fields" in the admin. TOF
+attaches the descriptor and translation behavior at runtime; the business model
+and its normal `ModelAdmin` do not require a TOF base class. Assigning a string
+updates the current Django language. Admin forms offer the available languages.
 
-At the same time, it is possible to leave some fields in the previous form by specify them in `TofAdmin` with attribute `only_current_lang = ('description', )`. <br>
+For individual translation rows, add `TranslationTabularInline` or
+`TranslationStackedInline` from `tof.admin` to your normal admin's `inlines`.
 
 ![Widget for translatable fields](https://raw.githubusercontent.com/danilovmy/django-tof/master/docs/images/field_with_langs.jpeg)
-  1. You can also use inline translation submission forms. To do this, specify admin class (always inherited from "TofAdmin") `inlines = (TranslationTabularInline, )`
-or `inlines = (TranslationStackedInline, )`
 
 ## Programmatic use
 Like a standard using, but it is possible to get a specific translation.
@@ -77,33 +75,55 @@ book.title  # => Title en
 book.title.de  # => Title de
 ~~~
 
-## Settings
+## Settings and query behavior
 
-_The value for these variables can be specified in your settings.py_
+`DEFAULT_LANGUAGE` in Django settings defaults to `"en"`. Field display uses the
+current Django language, then the default language, another nonempty translation,
+and finally the original database value. Language codes use their first two
+characters. `LANGUAGES_SOURCE` defaults to `tof.models.Language` and supplies the
+admin language choices; `TRANSLATION_ADMINSITE` can select a custom admin site.
 
-DEFAULT_LANGUAGE: _default_ "en" - Default language is stub, used if not other translations is found.
+On PostgreSQL, the native Django compiler loads translations in the same SELECT.
+Filtering searches the original value and all translations. An implicit exact
+lookup (`filter(title="hello")`) matches translations without regard to case;
+explicit `title__exact="hello"` preserves case sensitivity. The original column
+keeps Django's normal lookup behavior. Ordering uses the displayed translation,
+including `Meta.ordering`, admin ordering, related fields, and expressions, before
+pagination. Managers and business model definitions do not need to change.
 
-FALLBACK_LANGUAGES: _default_ `{SITE_ID: ('en', 'de', 'ru'), 'fr': ('nl', ),}` - Determinate the order of search of languages for translation if the translation is in desired
-no language. The key can be SITE_ID, None or language.
+Other database backends keep Django's native compiler. Translation access can
+load extra queries there; translated filtering and ordering require PostgreSQL.
+The obsolete `FALLBACK_LANGUAGES`, `DEFAULT_FILTER_LANGUAGE`, and
+`CHANGE_DEFAULT_MANAGER` settings are no longer used.
 
-The processing order is this, if a translation into current/requested language is not found, then first we checked by the language key, if there is, looking translations for requested languages,
-if not - we take the SIDE_ID key.
-For example:
+## Compatibility and upgrade
 
-  - if current language "fr", then searching order will be next: "fr" -> "nl" -> DEFAULT_LANGUAGE -> then if there is an original value that was before the declaration of this field like translatable.
-  - if current language "en", then searching order will be next "en" -> "de" -> "ru" -> DEFAULT_LANGUAGE -> then if there is an original value that was before the declaration of this field like translatable.
+- Python 3.10–3.12; Django 4.2.x or 5.0.x (`>=4.2,<5.1`).
+- PostgreSQL 12 or newer for translated queries (verified locally on 14.21).
+- `psycopg[binary]>=3.1.8,<4` is installed because the compiler imports Django's
+  PostgreSQL expressions. CKEditor is optional and is not a runtime dependency.
 
-DEFAULT_FILTER_LANGUAGE: _default_ "current" - Indicates in which translations search/filter values. May be in the next forms `__all__`, `current`, `['en', 'de']`, `{'en', ('en', 'de', 'ru')}`
+The existing TOF migration history and `Language.id` are preserved. Translation
+foreign keys continue to store ISO codes through `Language.iso`. Upgrading does
+not require changing business models or regenerating TOF migrations. Filtering
+now searches every translation, and default ordering now follows the displayed
+translation; review callers relying on the previous behavior.
 
-  - `current` - if this value is assigned, the filtering is occurs only on the translation into the current language. This is a default value.
-  - `__all__` - if this value is assigned, the filtering is occurs for all translations.
-  - `['en', 'de']` - if this value is assigned, the filtering is occurs according to translations of the specified languages.
-  - `{'en', ('en', 'de', 'ru')}` - if this value is assigned, the filtering is occurs according to translations of languages received by the key of current language.
+## Development and tests
 
-CHANGE_DEFAULT_MANAGER: _default_ "True" - Changing the default manager of the model. If it True, then standard manager is transferred into class attribute "objects_origin",
-and "objects" becomes the standard manager inherited from standard with adding the functionality that recognized translated fields and takes into account settings from  DEFAULT_FILTER_LANGUAGE.
+Install the package and build tools with `python -m pip install -e ".[dev]"`.
+The optional `[test]` extra enables the CKEditor widget regression.
+Configure a dedicated PostgreSQL database with `TOF_DB_NAME`, `TOF_DB_USER`,
+`TOF_DB_PASSWORD`, `TOF_DB_HOST`, `TOF_DB_PORT`, and `TOF_TEST_DB_NAME`.
+Defaults are `tof_library`, `tof_test`, an empty password, `127.0.0.1`, `5432`,
+and `test_tof_library`. The user must be allowed to create the test database.
 
-## Requirements
+```console
+python -m django test tests --settings=tests.settings --keepdb --noinput
+python -m build
+```
 
-  - Python (\>=3.9)
-  - Django (\>=4.0)
+`TOF_DB_ENGINE=django.db.backends.sqlite3` runs the DB-independent tests and
+SQLite smoke checks, skipping PostgreSQL query regressions. The wheel contains
+only `tof`, including its migrations, templates, static assets, and language
+fixture. The source distribution additionally includes the standalone tests.

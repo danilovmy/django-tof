@@ -1,32 +1,41 @@
-name: Test tof
-on: [push]
+name: Test TOF
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
-      matrix:
-        python-version: [3.6, 3.7, 3.8]
       fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.12']
+        django-version: ['4.2', '5.0']
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: tof_test
+          POSTGRES_PASSWORD: tof_test
+          POSTGRES_DB: tof_library
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: tests.settings
+      TOF_DB_PASSWORD: tof_test
     steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Build and install the wheel
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
-          cd ./example_project/
-          python -m poetry install
-      - name: Test with django test
-        run: |
-          cd ./example_project/
-          python -m poetry run coverage run --source='tof' manage.py test tof
-          python -m poetry run coverage xml
-      - name: Codecov
-        uses: codecov/codecov-action@v1.0.5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./example_project/coverage.xml
+          python -m pip install --upgrade pip build
+          python -m build
+          python -m pip install dist/*.whl "Django~=${{ matrix.django-version }}.0" "django-ckeditor>=6.7,<7"
+          python -m pip check
+      - name: Check the installed package
+        run: python -m django check
+      - name: Run PostgreSQL regressions
+        run: python -m django test tests --keepdb --noinput
