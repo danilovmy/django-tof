@@ -11,9 +11,10 @@ from django.test import SimpleTestCase
 import tof
 import tests
 from tof.apps import TofConfig
+from .isolation import TestContextsMixin
 
 
-class StartupTests(SimpleTestCase):
+class StartupTests(TestContextsMixin, SimpleTestCase):
     def setUp(self):
         self.events = []
         self.config = TofConfig('tof', tof)
@@ -22,11 +23,11 @@ class StartupTests(SimpleTestCase):
         self.last = AppConfig('tests', tests)
         self.last.import_models = Mock()
         self.last.ready = Mock(side_effect=lambda: self.events.append('last ready'))
-        self.query_patch = self.enterContext(patch('tof.apps.query.patch'))
-        self.connection = self.enterContext(patch('tof.apps.connection'))
+        self.query_patch = self.enter_context(patch('tof.apps.query.patch'))
+        self.connection = self.enter_context(patch('tof.apps.connection'))
         self.connection.temporary_connection.return_value = nullcontext()
         self.connection.introspection.table_names.side_effect = self.read_tables
-        self.enterContext(patch.object(sys, 'argv', ['manage.py', 'check']))
+        self.enter_context(patch.object(sys, 'argv', ['manage.py', 'check']))
 
     def read_tables(self):
         self.assertTrue(self.config.apps.ready)

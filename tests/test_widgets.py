@@ -20,7 +20,7 @@ from .isolation import NativeTranslationsMixin
 
 class TranslationWidgetTests(NativeTranslationsMixin, SimpleTestCase):
     def setUp(self):
-        self.enterContext(patch('tof.widgets.resolve_admin_link', return_value=None))
+        self.enter_context(patch('tof.widgets.resolve_admin_link', return_value=None))
 
     def context(self, widget):
         return widget.get_context('title', [('de', 'Hallo')], {'id': 'id_title'})
