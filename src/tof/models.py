@@ -5,7 +5,7 @@ from django.db.models import Q, QuerySet
 from django.utils.safestring import mark_safe
 from django.utils.translation.trans_real import DjangoTranslation
 
-from . import _
+from . import _, activate_language, get_language
 from .mixins import apply_mixins
 from .utils import TranslatableText
 
@@ -14,15 +14,23 @@ class TranslationQueryset(QuerySet):
 
     @transaction.atomic
     def save_translations(self, instance):
-        vars(instance).pop('get_from_db', None)
+        # Loading uses the compiler snapshot; writes deliberately re-read current rows.
+        saved = {}
+        for obj in self.filter():
+            saved.setdefault(obj.field_id, {})[obj.lang_id] = obj
+        for field in instance.translatable_fields():
+            value = vars(instance).get(field.name)
+            if isinstance(value, TranslatableText):
+                vars(value)['_tof_saved'] = saved.setdefault(field.pk, {})
         to_update = [*instance.collect('updated')]
         self.bulk_update((obj for obj in to_update if obj.value), ['value'])
-        self.bulk_delete(obj.pk for obj in to_update if not obj.value)
-        self.bulk_create(instance.collect('created'))
-
-    def bulk_delete(self, objs):
-        return self.filter(pk__in=[*objs]).delete()
-
+        self.filter(pk__in=(obj.pk for obj in to_update if not obj.value)).delete()
+        created = self.bulk_create(instance.collect('created'))
+        for obj in (*to_update, *created):
+            if obj.value:
+                saved[obj.field_id][obj.lang_id] = obj
+            else:
+                saved[obj.field_id].pop(obj.lang_id, None)
 
 class Translation(models.Model):
 
@@ -59,7 +67,7 @@ class Translation(models.Model):
 class TranslatableFieldQuerySet(QuerySet):
 
     def patch_fields(self):
-        for field in self.all():
+        for field in self.select_related('content_type'):
             field.patch_unpatch('patch')
 
 
@@ -80,9 +88,9 @@ class TranslatableField(models.Model):
     def __str__(self):
         return f'{self.content_type.model}|{self.name}'
 
-    def pre_save(self, instance, *__):
+    def pre_save(self, instance, *args, **kwargs):
         value = vars(instance).get(self.name)
-        return getattr(value, '_origin', None) or value
+        return value['_origin'] if self.is_translatable(value) else value
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -96,6 +104,9 @@ class TranslatableField(models.Model):
         return isinstance(value, self.translator_cls)
 
     def get_saved(self, instance):
+        saved = getattr(vars(instance).get(self.name), '_tof_saved', None)
+        if saved is not None:
+            return saved
         return instance.get_from_db().get(self.pk) or {}
 
     def collect(self, instance, action):
@@ -113,11 +124,13 @@ class TranslatableField(models.Model):
 
     def __get__(self, instance, instance_cls):
         if instance:
+            if self.name not in vars(instance):
+                self.replaced_field.__get__(instance, instance_cls)
             value = vars(instance).get(self.name)
             if hasattr(instance, '_end_init') and not self.is_translatable(value):
                 value = self.translator_cls().update(_origin=value, **self.get_saved(instance))
             return value
-        return vars(instance_cls).get(self.name)
+        return self
 
     def __set__(self, instance, value):
         if hasattr(instance, '_end_init') and not self.is_translatable(value):
@@ -138,8 +151,15 @@ class TranslatableField(models.Model):
 
     def patch_field(self, target_cls, fields):
         if getattr(target_cls, self.name, None):
+            self._inherited_descriptor = self.name not in vars(target_cls)
+            self.translation_content_type_id = self.content_type_id
+            if target_cls._meta.proxy:
+                original = getattr(target_cls._meta.concrete_model, self.name, None)
+                self.translation_content_type_id = getattr(original, 'translation_content_type_id', None) or ContentType.objects.get_for_model(target_cls).pk
             self.replaced_field = getattr(target_cls, self.name, None)
-            setattr(self.replaced_field.field, 'pre_save', lambda *args, **kwargs: self.pre_save(*args, *kwargs))
+            if isinstance(self.replaced_field, TranslatableField):
+                self.replaced_field = self.replaced_field.replaced_field
+            self.replaced_field.field.pre_save = self.pre_save
             setattr(target_cls, self.name, self)
             fields[self.pk] = self.name
 
@@ -147,9 +167,23 @@ class TranslatableField(models.Model):
         if getattr(target_cls, self.name, None):
             field = getattr(target_cls, self.name, None)
             if hasattr(field, 'replaced_field'):
-                delattr(field.replaced_field.field, 'pre_save')
-                setattr(target_cls, self.name, field.replaced_field)
+                original = getattr(target_cls._meta.concrete_model, self.name, None)
+                if original is not field and isinstance(original, TranslatableField):
+                    field.replaced_field.field.pre_save = original.pre_save
+                elif 'pre_save' in vars(field.replaced_field.field):
+                    delattr(field.replaced_field.field, 'pre_save')
+                if getattr(field, '_inherited_descriptor', False):
+                    delattr(target_cls, self.name)
+                else:
+                    setattr(target_cls, self.name, field.replaced_field)
             fields.pop(self.pk, None)
+
+    def set_values(self, obj, **values):
+        current_lang = get_language()
+        for lang, value in values.items():
+            activate_language(lang)
+            setattr(obj, self.name, value)
+        activate_language(current_lang)
 
 
 class LanguageQuerySet(QuerySet):
@@ -169,12 +203,12 @@ class Language(models.Model):
         ordering = ['iso']
 
     iso = models.CharField(max_length=2, unique=True)
-    is_active = models.BooleanField(_(u'Active'), default=True)
+    is_active = models.BooleanField(_('Active'), default=True)
 
     objects = LanguageQuerySet.as_manager()
 
     def __str__(self):
-        return f'{self.iso or str()}'
+        return f'{self.iso or ""}'
 
 
 class ThroughLanguage(models.Model):

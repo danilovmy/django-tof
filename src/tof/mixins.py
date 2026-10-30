@@ -1,18 +1,17 @@
+# -*- coding: utf-8 -*-
 from django.contrib.admin.options import ModelAdmin
 from django.contrib.admin.sites import all_sites
-from django.db.models import Q
 from django.templatetags.i18n import GetAvailableLanguagesNode, settings
 from django.utils.module_loading import import_string
 
 from . import LANGUAGES_SOURCE
 from .fields import TranslatableFieldFormField
+from .utils import tof_class
 
-
-class tofQ(Q):
-    patch = True
 
 class TofModelAdmin(ModelAdmin):
     pass
+
 
 class ClassPatcherMixin:
 
@@ -35,56 +34,17 @@ class InstancePatcherMixin(ClassPatcherMixin):
 
     @classmethod
     def patch_bases(cls, target, *args):
-        return not isinstance(target, cls) and super().patch_bases(type(target), *args)
+        if not isinstance(target, cls):
+            target.__class__ = tof_class(type(target), cls)
 
     @classmethod
     def unpatch_bases(cls, target, *args):
-        return isinstance(target, cls) and super().unpatch_bases(type(target), *args)
-
-
-class TranslationManagerMixin(InstancePatcherMixin):
-
-    def filter(self, *args, **kwargs):
-        return self.run_function(super().filter, *args, **kwargs)
-
-    def exclude(self, *args, **kwargs):
-        return self.run_function(super().exclude, *args, **kwargs)
-
-    def run_function(self, func, *args, **kwargs):
-        query, changed = self.expand_arg(Q(*args, **kwargs))
-        return func(query).distinct() if changed else func(tofQ(*args, **kwargs))
-
-    def expand_arg(self, arg):
-        if arg and not getattr(arg, 'patch', None):
-            expanded = dict(self.expand_arg(child) if isinstance(child, Q) else (self.expand(*child) if isinstance(child, (list, tuple)) else (child, False)) for child in arg.children)
-            if any(expanded.values()):
-                return tofQ(*expanded.keys(), _connector=arg.connector, _negated=arg.negated), True
-        return arg, False
-
-    def expand(self, key, value):
-        attribute, __, lookup = key.partition('__')
-        field = getattr(self.model, attribute, None)
-        if getattr(field, 'replaced_field', None):
-            return tofQ((key, value), Q(**{f'translations__value__{lookup or "iexact"}'.strip('_'): value, 'translations__field_id': field.pk}), _connector=Q.OR), True
-        return Q((key, value)), False
-
-    def get_queryset(self, *args, **kwargs):
-        response = super().get_queryset(*args, **kwargs)
-        return response.prefetch_related('translations') if hasattr(self.model, 'translations') else response
-
-    @classmethod
-    def patch_bases(cls, target, *args):
-        if not isinstance(target, cls) and target.auto_created:
-            target.__class__ = type(f'{target.model.__name__}Manager', (type(target),), {})
-        super().patch_bases(target, *args)
-
-        if not issubclass(target._queryset_class, cls):
-            target._queryset_class = type(f'{target.__class__.__name__}Queryset', (cls, target._queryset_class), {})
-
-    @classmethod
-    def unpatch_bases(cls, target, *args):
-        super().unpatch_bases(target, *args)
-        super().unpatch_bases(target._queryset_class, *args)
+        fields = args and args[0]
+        bases = type(target).__bases__
+        if not fields and len(bases) == 2 and bases[0] is cls:
+            original = bases[1]
+            if type(target) is tof_class(original, cls):
+                target.__class__ = original
 
 
 class TranslationFieldModelFormMixin(ClassPatcherMixin):
@@ -106,6 +66,13 @@ class TranslationFieldModelFormMixin(ClassPatcherMixin):
 
 class TranslationFieldMixin(ClassPatcherMixin):
 
+    @classmethod
+    def translatable_fields(cls):
+        for name in dict.fromkeys(cls.translations.fields.values()):
+            field = getattr(cls, name, None)
+            if getattr(field, 'replaced_field', None):
+                yield field
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._end_init = True
@@ -113,17 +80,29 @@ class TranslationFieldMixin(ClassPatcherMixin):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if hasattr(self, 'translations'):
+            self.translations._remove_prefetched_objects()
             self.translations.save_translations(self)
 
+    def refresh_from_db(self, *args, **kwargs):
+        getattr(self, '_prefetched_objects_cache', {}).pop('translations', None)
+        return super().refresh_from_db(*args, **kwargs)
+
     def get_from_db(self, **kwargs):
-        for translation in self.translations.all():
+        field_count = 0
+        for field_count, field in enumerate(self.translatable_fields(), 1):
+            saved = getattr(vars(self).get(field.name), '_tof_saved', None)
+            if saved is not None:
+                kwargs[field.pk] = saved
+        if self._state.adding or len(kwargs) == field_count:
+            return kwargs
+        cache = vars(self).setdefault('_prefetched_objects_cache', {})
+        for translation in cache.setdefault('translations', self.translations.all()):
             kwargs.setdefault(translation.field_id, {}).update({translation.lang_id: translation})
-        self.translations._remove_prefetched_objects()
-        return vars(self).setdefault('get_from_db', lambda *__, **___: kwargs)()  # made cached function
+        return kwargs
 
     def collect(self, action):
-        for field in type(self).translations.fields.values():
-            yield from getattr(type(self)._meta.concrete_model, field).collect(self, action)
+        for field in self.translatable_fields():
+            yield from field.collect(self, action)
 
 
 class TofAdminMixin(InstancePatcherMixin):
@@ -138,25 +117,16 @@ class TofAdminMixin(InstancePatcherMixin):
         for model_admin in cls.get_admins(model):
             getattr(cls, f'{patch}_bases')(model_admin, fields)
 
-
-    @classmethod
-    def get_admins(cls, model):
-        yield from (cls.check_modeladmin(site, model) for site in all_sites if site.is_registered(model))
-
     @staticmethod
-    def check_modeladmin(site, model):
-        """If model was registered with builtin ModelAdmin class we replace it with our TofModelAdmin. Otherwise patch brake MRO for already patched admins."""
-        if type(site._registry[model]) is ModelAdmin:
-            site._registry[model] = TofModelAdmin(model, site)
-        return site._registry[model]
-
+    def get_admins(model):
+        yield from (site._registry[model] for site in all_sites if site.is_registered(model))
 
 
 class TofInlineMixin(ClassPatcherMixin):
     _inlines_cache = {}
 
     def get_formset(self, request, obj=None, **kwargs):
-        formset = super().get_formset(request, obj=obj, **kwargs)
+        formset = super(TofInlineMixin, self).get_formset(request, obj=obj, **kwargs)
         TranslationFieldModelFormMixin.patch_bases(formset.form)
         return formset
 
@@ -183,7 +153,6 @@ class TofInlineMixin(ClassPatcherMixin):
 def apply_mixins(patch, target_cls, fields):
     """Add/remove to target_cls bases mixins, whose is necessary for work with tof."""
     getattr(TranslationFieldMixin, f'{patch}_bases')(target_cls, fields)
-    getattr(TranslationManagerMixin, f'{patch}_bases')(target_cls.objects, fields)
     TofAdminMixin.patch_unpatch(patch, target_cls, fields)
     TofInlineMixin.patch_unpatch(patch, target_cls, fields)
 
@@ -198,8 +167,11 @@ def load_languages(request):
 
 def wrapper(func):
     def wrapped(self, context):
-        context[self.variable] = load_languages(context.get('request')) or func(context)
-        return ''
+        languages = load_languages(context.get('request'))
+        if languages:
+            context[self.variable] = languages
+            return ''
+        return func(self, context)
     return wrapped
 
 

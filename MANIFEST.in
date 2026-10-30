@@ -1,0 +1,9 @@
+include README.md README_ru.md AUTHORS LICENSE pyproject.toml
+recursive-include src/tof *.py *.html *.js *.css *.json.gz
+recursive-include tests *.py *.json
+prune src/core
+prune core
+prune example
+prune .test-work
+exclude src/manage.py tests/benchmark.py tests/tests.txt
+global-exclude __pycache__ *.py[cod] *.sqlite3 local_settings.py

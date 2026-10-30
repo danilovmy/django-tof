@@ -1,6 +1,14 @@
+from functools import cache
+
 from django.conf import settings
+from django.utils.functional import classproperty
 
 from . import get_language
+
+
+@cache
+def tof_class(base, mixin):
+    return type(f'Tof{base.__name__}', (mixin, base), {})
 
 
 class TranslatableText(str):
@@ -74,7 +82,6 @@ class TranslatableText(str):
         lang = get_language() or 'en'
         return lang[:2]
 
-    @property
-    def DEFAULT(self):
-        response = vars(self)['DEFAULT'] = getattr(settings, 'DEFAULT_LANGUAGE', None) or 'en'
-        return response
+    @classproperty
+    def DEFAULT(cls):
+        return getattr(settings, 'DEFAULT_LANGUAGE', None) or 'en'

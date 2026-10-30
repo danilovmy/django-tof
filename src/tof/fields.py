@@ -26,3 +26,11 @@ class TranslatableFieldFormField(MultiValueField):
             self.cleaned_langs, values = list(values.keys()), list(values.values())
             self.fields = self.fields * len(values)
         return super().clean(values)
+
+    def has_changed(self, initial, data):
+        if not self.disabled:
+            initial = {str(lang)[:2]: value for lang, value in self.widget.decompress(initial)}
+            data = {str(lang)[:2]: value for lang, value in data or ()}
+            for lang in initial.keys() | data.keys():
+                if super().has_changed([initial.get(lang)], [data.get(lang)]):
+                    return True

@@ -1,0 +1,30 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; {{ action_short_description }}
+</div>
+{% endblock %}
+
+{% block content %}
+<p>{{ action_description }}</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.media }}
+  <input type="hidden" name="action" value="{{ action_name }}">
+  {% for objects in action_objects %}
+    <ul>
+      {% for object in objects %}
+        <li>{{ object }}{% if callback_template %}{% include callback_template %}{% else %}<input type="hidden" name="{{ action_checkbox_name }}" value="{{ object.pk }}">{% endif %}</li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+  {{ form.as_p }}
+  {{ answer_form.render_button_positive }}
+  {{ answer_form.render_button_negative }}
+</form>
+{% endblock %}

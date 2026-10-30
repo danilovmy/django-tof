@@ -3,7 +3,7 @@ import os
 
 from django.core.management import BaseCommand
 
-from ...models import StaticMessageTranslation, Language
+from tof.models import StaticMessageTranslation, Language
 
 
 class Command(BaseCommand):
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         for message in self.get_translations_from_files():
             static, is_created = StaticMessageTranslation.objects.get_or_create(message=message)
             for lang, values in translations.items():
-                values.update({message: getattr(static.translation, lang, f'{static.message}')})
+                values.update({message: getattr(static.translation, lang, f'{static.message}') or message})
         for file in self.get_files():
             with open(f'{self.locale_dir}{file}', 'w', encoding='utf-8') as f:
                 f.write(json.dumps(translations[self.get_lang_from_file(file)], indent=2))

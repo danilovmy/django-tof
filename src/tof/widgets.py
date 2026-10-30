@@ -1,5 +1,7 @@
+from functools import cache
+
 from django.contrib.admin.sites import all_sites
-from django.forms.widgets import Media, MultiWidget
+from django.forms.widgets import HiddenInput, MultiWidget
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.utils.safestring import mark_safe
@@ -23,18 +25,26 @@ class ValueFormatterMixin:
         return super().format_value(value)
 
 
+@cache
+def formatted_widget_class(original):
+    # Keep the widget's own methods before the formatter, including super().
+    bridge = type(f'Tof{original.__name__}Base', (ValueFormatterMixin, *original.__bases__), {})
+    adapted = type(f'Tof{original.__name__}', (original, bridge), {})
+    # Reuse existing media descriptors without Django's generated wrappers.
+    del bridge.media, adapted.media
+    return adapted
+
+
 class TranslatableFieldWidget(ValueFormatterMixin, MultiWidget):
     template_name = 'tof/multiwidget.html'
     input_type = 'text'
     _datadict = None
 
-    def __init__(self, widgets, attrs=None):
-        super().__init__(widgets, attrs=attrs)
+    def get_context(self, name, value, attrs):
         for widget in self.widgets:
             if not isinstance(widget, ValueFormatterMixin):
-                widget.__class__.__bases__ = (ValueFormatterMixin,) + widget.__class__.__bases__
+                widget.__class__ = formatted_widget_class(type(widget))
 
-    def get_context(self, name, value, attrs):
         value = self.format_value(self.decompress(value))
         if value:
             self.widgets = self.widgets * len(value)
@@ -45,16 +55,12 @@ class TranslatableFieldWidget(ValueFormatterMixin, MultiWidget):
         context['add_related_url'] = resolve_admin_link('tof', 'language', 'changelist')
         return context
 
-    def id_for_label(self, id_):
-        return super().id_for_label(id_).rpartition('_')[0]
-
     def decompress(self, value):
         return (type(value).__name__ == 'TranslatableText' and [*value.iter]) or (isinstance(value, (list, tuple)) and value) or [(get_language(), value or '')]
 
-    @property
-    def media(self):
-        return super().media + Media(css={'all': ('tof/css/style.css', )},
-                                     js=('tof/js/translatable_fields_widget.js', ))
+    class Media:
+        css = {'all': ('tof/css/style.css',)}
+        js = ('tof/js/translatable_fields_widget.js',)
 
     def value_from_datadict(self, data, __, name):
         if self._datadict is None:
@@ -75,6 +81,4 @@ class TranslatableFieldWidget(ValueFormatterMixin, MultiWidget):
 class TranslatableFieldHiddenWidget(TranslatableFieldWidget):
 
     def __init__(self, attrs=None):
-        super().__init__(attrs)
-        for widget in self.widgets:
-            widget.input_type = 'hidden'
+        super().__init__([HiddenInput()], attrs)

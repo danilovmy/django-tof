@@ -1,6 +1,3 @@
-import logging
-
-from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.options import IS_POPUP_VAR
@@ -16,10 +13,9 @@ from .forms import TranslationsForm, TranslationsInLineForm
 from .models import Language, StaticMessageTranslation, TranslatableField, Translation
 from .views import ActionViewsMixin
 
-# Get an instance of a logger
-logger = logging.getLogger('django')
 translation_adminsite_name = getattr(settings, 'TRANSLATION_ADMINSITE', 'translation-admin')
 TranslationSiteAdmin = next((site for site in admin.sites.all_sites if site.name == translation_adminsite_name), None) or admin.sites.site
+
 
 @admin.register(ContentType, site=TranslationSiteAdmin)
 class ContentTypeAdmin(admin.ModelAdmin):
@@ -76,7 +72,12 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
     search_fields = ('content_type__model', 'name')
     list_display = ('content_type', 'name')
 
-    fieldsets = (None, {'fields': ['content_type', 'name']}),
+    fieldsets = ((None, {
+        'fields': (
+            'content_type',
+            'name',
+        ),
+    }), )
 
     autocomplete_fields = ('content_type',)
 
@@ -106,12 +107,11 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
         field = super().formfield_for_dbfield(db_field, request, **kwargs)
         if db_field.name == 'content_type':
             field.widget.attrs.update({'onchange': 'concrete_search(this);', 'data-name': 'name'})
-            field.queryset = field.queryset
 
         return field
 
     def get_search_results(self, request, queryset, search_term):
-        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' and 'content_type' in request.GET:
             return self.get_search_results_for_ajax(request, queryset, search_term)
         return super().get_search_results(request, queryset, search_term)
 
@@ -127,11 +127,27 @@ class TranslatableFieldAdmin(admin.ModelAdmin):
 @admin.register(Translation, site=TranslationSiteAdmin)
 class TranslationAdmin(admin.ModelAdmin):
     form = TranslationsForm
+    search_fields = ('value', )
     list_display = ('content_object', 'lang', 'field', 'value')
-    list_filter = 'content_type',
-    fieldsets = (None, {'fields': (('field','lang'), 'object_id', 'value')}), ('hidden', {'classes': ['hidden'], 'fields': ['content_type']})
+    list_filter = ('content_type', )
+    fieldsets = ((None, {
+        'fields': (
+            ('field', 'lang'),
+            'object_id',
+            'value',
+        ),
+    }), (
+        'hidden',
+        {
+            'classes': ('hidden', ),
+            'fields': ('content_type', ),
+        },
+    ))
     autocomplete_fields = ('field', 'lang')
     url_name = '%s:%s_%s_autocomplete'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('content_object')
 
     def get_readonly_fields(self, request, obj):
         response = list(super().get_readonly_fields(request, obj))
@@ -155,9 +171,8 @@ class TranslationInlineMixin:
     formset = TranslationFormSet
     form = TranslationsInLineForm
 
-    @property
-    def media(self):
-        return super().media + forms.Media(js=('tof/js/translation_inline.js', ))
+    class Media:
+        js = ('tof/js/translation_inline.js',)
 
 
 class TranslationInline(TranslationInlineMixin, GenericInlineModelAdmin):
@@ -177,7 +192,7 @@ class StaticMessageTranslationAdmin(ActionViewsMixin, admin.ModelAdmin):
     fields = ('message', 'translation')
     search_fields = ('message', 'translation')
     readonly_fields = ('message', 'languages')
-    list_display = ('__str__', 'languages')
+    list_display = ('__str__', 'message', 'languages')
     actions = (GenerateTranslationJSONFileAction.as_view(), VueI18NExtractAction.as_view())
 
     def has_add_permission(self, request):
@@ -185,9 +200,3 @@ class StaticMessageTranslationAdmin(ActionViewsMixin, admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
-
-    def has_change_permission(self, request, obj=None):
-        return request.user.has_perm('accounts.is_translator')
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).distinct()

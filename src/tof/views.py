@@ -26,7 +26,7 @@ class YesNoMixIn:
     answer_help_text = answer_label = ''
     method = 'POST'
     process_url = ''
-    form_template = 'core/extraform.html'
+    form_template = 'tof/extraform.html'
 
     def get_cleaned_data(self, *args, **kwargs):
         return self.cleaned_data if self.is_valid() else {}
@@ -70,7 +70,7 @@ class YesNoMixIn:
 
 class YesNoForm(YesNoMixIn, forms.Form):
     prefix = 'YesNoForm'
-    button_template = '<button type="{submit}" name="{name}" onclick="document.getElementById(`layer`).style.display = `block`;" value="{value}">{title}</button>'
+    button_template = '<button type="{submit}" name="{name}" value="{value}">{title}</button>'
     answer = forms.ChoiceField(choices=YesNoMixIn.CHOICES, widget=forms.RadioSelect())
 
 
@@ -79,7 +79,7 @@ class ActionView(FormView):
     CHANGE = CHANGE
     DELETION = DELETION
     logger = LogEntry
-    template_name = 'core/confirmation.html'
+    template_name = 'tof/confirmation.html'
     template_name_suffix = 'confirmation'
     callback_template = None
     callback_template_name_suffix = 'callback'
@@ -97,7 +97,7 @@ class ActionView(FormView):
     request = None
     permissions = ()
     permissions_message_error = _('You don\'t have enough permissions')
-    template_button = 'core/action_button.html'
+    template_button = 'tof/action_button.html'
     error_message = 'Error {cause}'
     as_button = False
 
@@ -163,7 +163,7 @@ class ActionView(FormView):
     def dispatch(self, admin, request, queryset, *args, **kwargs):
         if self.check_permissions(request, admin):
             return super(ActionView, self).dispatch(request, *args, **kwargs)
-        return self.cancel(self.permissions_message_error)
+        return self.cancel(message=self.permissions_message_error)
 
     def setup(self, admin, request, queryset, *args, **kwargs):
         vars(self).update(admin=admin, model=admin.model, queryset=queryset)
@@ -246,6 +246,7 @@ class ActionView(FormView):
     def get_context_data(self, **kwargs):
         opts = self.model._meta  # pylint: disable=protected-access
         context = {
+            **self.admin.admin_site.each_context(self.request),
             'title': '%s. %s' % (str(self.short_description), str(_(u'Are you sure?'))),
             'action_short_description': self.short_description,
             'action_description': self.description,
