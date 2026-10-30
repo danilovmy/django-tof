@@ -262,8 +262,8 @@ class StaticMessageTranslation(models.Model):
         if not cached.translation.current:
             translation = cls.base_translator_cls(translator, message)
             if translation not in vars(cached.translation).values():
-                cached.translation = translation
-                cached.save()
+                cached.translation = cached.translations.get_or_create(
+                    field=cls.translation, lang_id=TranslatableText.get_lang(), defaults={'value': translation})[0].value
         return mark_safe(cached.translation)
 
     @classmethod
