@@ -37,6 +37,9 @@ class TranslatableText(str):
         __, value = next(self.iter, (None, None))
         return f'{value or self["_origin"] or str()}'
 
+    def strip(self, chars=None):
+        return str(self).strip(chars)
+
     def __repr__(self):
         return f'{self} {vars(self).keys()}'
 

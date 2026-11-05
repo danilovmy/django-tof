@@ -1,7 +1,8 @@
+from django.contrib.admin.utils import display_for_field
+from django.db import models
 from django.test import SimpleTestCase, override_settings
 from django.utils import translation
 from django.utils.crypto import get_random_string
-
 from tof.utils import TranslatableText
 
 
@@ -11,6 +12,24 @@ class TestTranslatableTextIntegration(SimpleTestCase):
         self.addCleanup(translation.activate, translation.get_language())
         self.test_obj = TranslatableText()
         self.random_english = get_random_string(20)
+
+    @override_settings(DEFAULT_LANGUAGE='en')
+    def test_admin_displays_translated_field_and_fallbacks(self):
+        field = models.CharField(max_length=255)
+        field.set_attributes_from_name('title')
+        value = TranslatableText().update(de='  Titel  ', en=' English ', _origin='Original')
+        for language, expected in [('de', 'Titel'), ('fr', 'English')]:
+            with self.subTest(language=language), translation.override(language):
+                self.assertEqual(display_for_field(value, field, '-'), display_for_field(str(value), field, '-'))
+                self.assertEqual(value.strip(), expected)
+        with translation.override('de'):
+            self.assertEqual(value.strip(' T'), 'itel')
+        with translation.override('fr'):
+            for attrs in ({'_origin': 'Original'}, {}, {'fr': '  '}):
+                with self.subTest(attrs=attrs):
+                    value = TranslatableText().update(**attrs)
+                    self.assertEqual(display_for_field(value, field, '-'), display_for_field(str(value), field, '-'))
+                    self.assertEqual(value.strip(), str(value).strip())
 
     def test_integration_language_normal(self):
         random_russian = get_random_string(20)
